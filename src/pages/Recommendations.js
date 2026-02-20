@@ -7,6 +7,13 @@ const Recommendations = () => {
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ category: '', difficulty: '' });
 
+  const truncate = (text, length = 110) => {
+    if (!text) {
+      return 'No description available.';
+    }
+    return text.length > length ? `${text.substring(0, length)}...` : text;
+  };
+
   useEffect(() => {
     fetchRecommendations();
   }, [filters]);
@@ -26,16 +33,17 @@ const Recommendations = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow p-8">
-          <h1 className="text-3xl font-bold mb-6">Property Enhancement Recommendations</h1>
+        <div className="bg-white rounded-xl shadow border border-slate-200 p-8">
+          <h1 className="text-3xl font-bold mb-2">Property Enhancement Recommendations</h1>
+          <p className="text-gray-600 mb-6">Browse improvements by category and difficulty to prioritize your next upgrade.</p>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-slate-50 border border-slate-200 rounded-lg p-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select
                 value={filters.category}
                 onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Categories</option>
                 <option value="kitchen-bathroom">Kitchen & Bathroom</option>
@@ -49,11 +57,11 @@ const Recommendations = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Difficulty</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
               <select
                 value={filters.difficulty}
                 onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Difficulty Levels</option>
                 <option value="easy">Easy</option>
@@ -64,14 +72,14 @@ const Recommendations = () => {
           </div>
 
           {loading ? (
-            <p className="text-center">Loading recommendations...</p>
+            <p className="text-center text-gray-600 py-10">Loading recommendations...</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recommendations.map(rec => (
-                <div key={rec._id} className="border rounded-lg p-4 hover:shadow-lg transition">
+                <div key={rec._id} className="border border-slate-200 rounded-xl p-5 hover:shadow-lg transition bg-white">
                   <h3 className="font-bold text-lg mb-2">{rec.title}</h3>
-                  <p className="text-gray-600 mb-3 text-sm min-h-[60px]">{rec.description.substring(0, 100)}...</p>
-                  
+                  <p className="text-gray-600 mb-3 text-sm min-h-[60px]">{truncate(rec.description)}</p>
+
                   <div className="mb-3 space-y-2">
                     <div className="flex justify-between">
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{rec.category}</span>
@@ -87,7 +95,7 @@ const Recommendations = () => {
 
                   <div className="border-t pt-3">
                     <p className="text-sm text-gray-700 mb-1">
-                      <strong>ROI:</strong> {rec.expectedROI}%
+                      <strong>ROI:</strong> {rec.expectedROI ?? 0}%
                     </p>
                     {rec.estimatedCost && (
                       <p className="text-sm text-gray-700 mb-1">
@@ -117,7 +125,7 @@ const Recommendations = () => {
           )}
 
           {!loading && recommendations.length === 0 && (
-            <p className="text-center text-gray-500 py-8">No recommendations found</p>
+            <p className="text-center text-gray-500 py-10">No recommendations found for the selected filters.</p>
           )}
         </div>
       </div>

@@ -75,39 +75,40 @@ const UserDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow p-8">
-          <h1 className="text-3xl font-bold mb-6">User Dashboard</h1>
+        <div className="bg-white rounded-xl shadow border border-slate-200 p-8">
+          <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
+          <p className="text-gray-600 mb-6">Track your submitted properties and add new ones for tailored recommendations.</p>
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="mb-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            className="mb-6 bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 font-semibold transition"
           >
             {showForm ? 'Cancel' : 'Submit Property'}
           </button>
 
           {showForm && (
-            <form onSubmit={handleSubmit} className="mb-8 border-t pt-6">
+            <form onSubmit={handleSubmit} className="mb-8 border-t border-slate-200 pt-6">
               <h2 className="text-2xl font-semibold mb-4">Submit Your Property</h2>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                   <input
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Property Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
                   <select
                     name="propertyType"
                     value={formData.propertyType}
                     onChange={handleChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option>apartment</option>
                     <option>house</option>
@@ -117,96 +118,96 @@ const UserDashboard = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Age (years)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Age (years)</label>
                   <input
                     type="number"
                     name="age"
                     value={formData.age}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Built-up Area (sq ft)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq ft)</label>
                   <input
                     type="number"
                     name="builUpArea"
                     value={formData.builUpArea}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Bedrooms</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
                   <input
                     type="number"
                     name="bedrooms"
                     value={formData.bedrooms}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Bathrooms</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
                   <input
                     type="number"
                     name="bathrooms"
                     value={formData.bathrooms}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">City</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                   <input
                     type="text"
                     name="location.city"
                     value={formData.location.city}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">State</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
                   <input
                     type="text"
                     name="location.state"
                     value={formData.location.state}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Pincode</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
                   <input
                     type="text"
                     name="location.pincode"
                     value={formData.location.pincode}
                     onChange={handleChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Condition</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
                   <select
                     name="condition"
                     value={formData.condition}
                     onChange={handleChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option>excellent</option>
                     <option>good</option>
@@ -215,32 +216,32 @@ const UserDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Current Value (₹)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Value (₹)</label>
                   <input
                     type="number"
                     name="currentValue"
                     value={formData.currentValue}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+                className="w-full bg-green-600 text-white py-2.5 rounded-md hover:bg-green-700 font-semibold transition"
               >
                 Submit Property
               </button>
             </form>
           )}
 
-          <div className="border-t pt-6">
-            <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
+          <div className="border-t border-slate-200 pt-6">
+            <h2 className="text-2xl font-semibold mb-4">Your Properties ({properties.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {properties.map(property => (
-                <div key={property._id} className="border rounded-lg p-4 hover:shadow-lg transition">
+                <div key={property._id} className="border border-slate-200 rounded-xl p-5 hover:shadow-lg transition">
                   <h3 className="font-bold text-lg mb-2">{property.title}</h3>
                   <p className="text-gray-600 mb-2">{property.location.city}, {property.location.state}</p>
                   <p className="text-sm text-gray-500">{property.propertyType} • {property.bedrooms} BHK</p>
@@ -251,6 +252,9 @@ const UserDashboard = () => {
                 </div>
               ))}
             </div>
+            {properties.length === 0 && (
+              <p className="text-gray-500 mt-4">No properties yet. Submit your first property to get started.</p>
+            )}
           </div>
         </div>
       </div>

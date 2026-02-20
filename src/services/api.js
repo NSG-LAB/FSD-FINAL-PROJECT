@@ -1,12 +1,9 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: 'http://localhost:5000/api',
 });
 
-// Add token to headers
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,20 +15,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Auth APIs
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
 };
 
-// User APIs
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.put('/users/profile', data),
   getAllUsers: () => api.get('/users'),
 };
 
-// Property APIs
 export const propertyAPI = {
   createProperty: (data) => api.post('/properties', data),
   getProperties: (filters) => api.get('/properties', { params: filters }),
@@ -40,13 +34,33 @@ export const propertyAPI = {
   deleteProperty: (id) => api.delete(`/properties/${id}`),
 };
 
-// Recommendation APIs
 export const recommendationAPI = {
   getRecommendations: (filters) => api.get('/recommendations', { params: filters }),
   getPropertyRecommendations: (propertyId) => api.get(`/recommendations/property/${propertyId}`),
   createRecommendation: (data) => api.post('/recommendations', data),
   updateRecommendation: (id, data) => api.put(`/recommendations/${id}`, data),
   deleteRecommendation: (id) => api.delete(`/recommendations/${id}`),
+};
+
+export const valuationAPI = {
+  estimateValue: (data) => api.post('/valuations/estimate', data),
+};
+
+export const roiAPI = {
+  generatePlan: (data) => api.post('/roi/plan', data),
+};
+
+export const notificationAPI = {
+  getNotifications: (params) => api.get('/notifications', { params }),
+  createReminder: (data) => api.post('/notifications', data),
+  markAsRead: (id) => api.patch(`/notifications/${id}/read`),
+};
+
+export const reportAPI = {
+  exportValuationPdf: (data) =>
+    api.post('/reports/valuation-pdf', data, {
+      responseType: 'blob',
+    }),
 };
 
 export default api;
