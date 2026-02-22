@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL,
 });
 
 api.interceptors.request.use(
@@ -44,6 +46,13 @@ export const recommendationAPI = {
 
 export const valuationAPI = {
   estimateValue: (data) => api.post('/valuations/estimate', data),
+};
+
+export const analyticsAPI = {
+  getOverview: () => api.get('/analytics/overview'),
+  getUserActivity: (period) => api.get('/analytics/user-activity', { params: { period } }),
+  getProperties: () => api.get('/analytics/properties'),
+  getPerformance: () => api.get('/analytics/performance'),
 };
 
 export const roiAPI = {

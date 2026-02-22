@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProperties, setLoading } from '../redux/propertySlice';
-import { propertyAPI } from '../services/api';
+import { propertyAPI, recommendationAPI, valuationAPI } from '../services/api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import PropertyFormWizard from '../components/PropertyFormWizard';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const UserDashboard = () => {
   const dispatch = useDispatch();
-  const { properties } = useSelector(state => state.property);
+  const navigate = useNavigate();
+  const { properties, loading } = useSelector(state => state.property);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    propertyType: 'apartment',
-    age: '',
-    builUpArea: '',
-    bedrooms: '',
-    bathrooms: '',
-    location: { city: '', state: '', pincode: '' },
-    condition: 'good',
-    currentValue: '',
+  const [recommendations, setRecommendations] = useState([]);
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    totalValue: 0,
+    pendingRecommendations: 0,
+    completedImprovements: 0
   });
 
   useEffect(() => {
@@ -27,233 +27,270 @@ const UserDashboard = () => {
   const fetchProperties = async () => {
     dispatch(setLoading(true));
     try {
-      const response = await propertyAPI.getProperties();
-      dispatch(setProperties(response.data.properties));
+      const [propertiesRes, recommendationsRes] = await Promise.all([
+        propertyAPI.getProperties(),
+        recommendationAPI.getRecommendations()
+      ]);
+
+      dispatch(setProperties(propertiesRes.data.properties));
+      setRecommendations(recommendationsRes.data.recommendations || []);
+
+      // Calculate stats
+      const properties = propertiesRes.data.properties || [];
+      const totalValue = properties.reduce((sum, prop) => sum + (prop.currentValue || 0), 0);
+      const pendingRecommendations = recommendationsRes.data.recommendations?.length || 0;
+
+      setStats({
+        totalProperties: properties.length,
+        totalValue,
+        pendingRecommendations,
+        completedImprovements: 0 // This would come from a separate API in a real app
+      });
     } catch (error) {
-      toast.error('Failed to fetch properties');
+      toast.error('Failed to fetch dashboard data');
     } finally {
       dispatch(setLoading(false));
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name.startsWith('location.')) {
-      const field = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        location: { ...prev.location, [field]: value }
-      }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await propertyAPI.createProperty(formData);
-      toast.success('Property submitted successfully!');
-      setShowForm(false);
-      setFormData({
-        title: '',
-        propertyType: 'apartment',
-        age: '',
-        builUpArea: '',
-        bedrooms: '',
-        bathrooms: '',
-        location: { city: '', state: '', pincode: '' },
-        condition: 'good',
-        currentValue: '',
-      });
-      fetchProperties();
-    } catch (error) {
-      toast.error('Failed to submit property');
-    }
-  };
-
   return (
     <div className="min-h-screen ui-page py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="ui-card rounded-xl p-8">
-          <h1 className="ui-card-title text-3xl font-bold mb-2">User Dashboard</h1>
-          <p className="text-gray-600 mb-6">Track your submitted properties and add new ones for tailored recommendations.</p>
+      <div className="max-w-6xl mx-auto mobile-container">
+        <div className="ui-card rounded-xl mobile-card">
+          <h1 className="ui-card-title mobile-heading font-bold mb-2">🏠 Property Command Center</h1>
+          <p className="mobile-text text-gray-600 mb-8">Manage your properties, track improvements, and maximize your investment potential.</p>
 
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="mb-6 btn-primary px-6 py-2.5"
-          >
-            {showForm ? 'Cancel' : 'Submit Property'}
-          </button>
-
-          {showForm && (
-            <form onSubmit={handleSubmit} className="mb-8 border-t border-slate-200 pt-6">
-              <h2 className="text-2xl font-semibold mb-4">Submit Your Property</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
-                  <select
-                    name="propertyType"
-                    value={formData.propertyType}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option>apartment</option>
-                    <option>house</option>
-                    <option>villa</option>
-                    <option>townhouse</option>
-                  </select>
+          {/* Stats Cards */}
+          {loading ? (
+            <SkeletonLoader type="dashboard-stats" />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-sm font-medium">Total Properties</p>
+                    <p className="text-2xl font-bold">{stats.totalProperties}</p>
+                  </div>
+                  <div className="text-3xl">🏢</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Age (years)</label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Built-up Area (sq ft)</label>
-                  <input
-                    type="number"
-                    name="builUpArea"
-                    value={formData.builUpArea}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
-                  <input
-                    type="number"
-                    name="bedrooms"
-                    value={formData.bedrooms}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms</label>
-                  <input
-                    type="number"
-                    name="bathrooms"
-                    value={formData.bathrooms}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-100 text-sm font-medium">Portfolio Value</p>
+                    <p className="text-2xl font-bold">₹{(stats.totalValue / 100000).toFixed(1)}L</p>
+                  </div>
+                  <div className="text-3xl">💰</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                  <input
-                    type="text"
-                    name="location.city"
-                    value={formData.location.city}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                  <input
-                    type="text"
-                    name="location.state"
-                    value={formData.location.state}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
-                  <input
-                    type="text"
-                    name="location.pincode"
-                    value={formData.location.pincode}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm font-medium">Available Tips</p>
+                    <p className="text-2xl font-bold">{stats.pendingRecommendations}</p>
+                  </div>
+                  <div className="text-3xl">💡</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
-                  <select
-                    name="condition"
-                    value={formData.condition}
-                    onChange={handleChange}
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option>excellent</option>
-                    <option>good</option>
-                    <option>average</option>
-                    <option>needs-work</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Value (₹)</label>
-                  <input
-                    type="number"
-                    name="currentValue"
-                    value={formData.currentValue}
-                    onChange={handleChange}
-                    required
-                    className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-orange-100 text-sm font-medium">Completed</p>
+                    <p className="text-2xl font-bold">{stats.completedImprovements}</p>
+                  </div>
+                  <div className="text-3xl">✅</div>
                 </div>
               </div>
-
-              <button
-                type="submit"
-                className="w-full btn-success py-2.5"
-              >
-                Submit Property
-              </button>
-            </form>
+            </div>
           )}
 
-          <div className="border-t border-slate-200 pt-6">
-            <h2 className="text-2xl font-semibold mb-4">Your Properties ({properties.length})</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {properties.map(property => (
-                <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
-                  <h3 className="ui-card-title font-bold text-lg mb-2">{property.title}</h3>
-                  <p className="text-gray-600 mb-2">{property.location.city}, {property.location.state}</p>
-                  <p className="text-sm text-gray-500">{property.propertyType} • {property.bedrooms} BHK</p>
-                  <p className="mt-2 ui-positive font-semibold">₹{property.currentValue?.toLocaleString()}</p>
-                  <span className="inline-block mt-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                    {property.status}
-                  </span>
-                </div>
-              ))}
+          {/* Quick Actions */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">⚡ Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <button
+                onClick={() => setShowForm(true)}
+                className="btn-primary p-4 text-center hover:shadow-lg transition-all duration-200"
+              >
+                <div className="text-2xl mb-2">🏠</div>
+                <div className="font-semibold">Add Property</div>
+                <div className="text-sm opacity-80">Submit new property</div>
+              </button>
+
+              <button
+                onClick={() => navigate('/valuation')}
+                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+              >
+                <div className="text-2xl mb-2">📊</div>
+                <div className="font-semibold">Get Valuation</div>
+                <div className="text-sm opacity-80">Estimate property value</div>
+              </button>
+
+              <button
+                onClick={() => navigate('/recommendations')}
+                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+              >
+                <div className="text-2xl mb-2">💡</div>
+                <div className="font-semibold">View Tips</div>
+                <div className="text-sm opacity-80">Browse improvements</div>
+              </button>
+
+              <button
+                onClick={() => navigate('/roi-planner')}
+                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+              >
+                <div className="text-2xl mb-2">📈</div>
+                <div className="font-semibold">ROI Planner</div>
+                <div className="text-sm opacity-80">Plan investments</div>
+              </button>
             </div>
-            {properties.length === 0 && (
-              <p className="text-gray-500 mt-4">No properties yet. Submit your first property to get started.</p>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">📋 Recent Properties</h2>
+              {loading ? (
+                <SkeletonLoader type="property-list" />
+              ) : properties.length > 0 ? (
+                <div className="space-y-3">
+                  {properties.slice(0, 3).map(property => (
+                    <div key={property._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-gray-900">{property.title}</p>
+                        <p className="text-sm text-gray-600">{property.location.city}, {property.location.state}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${
+                          property.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {property.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {properties.length > 3 && (
+                    <p className="text-sm text-blue-600 text-center pt-2">
+                      +{properties.length - 3} more properties
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">No properties yet. Add your first property to get started!</p>
+              )}
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">💡 Recommended Improvements</h2>
+              {recommendations.length > 0 ? (
+                <div className="space-y-3">
+                  {recommendations.slice(0, 3).map(rec => (
+                    <div key={rec._id} className="p-3 bg-blue-50 rounded-lg">
+                      <p className="font-medium text-gray-900 text-sm">{rec.title}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          rec.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
+                          rec.difficulty === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {rec.difficulty}
+                        </span>
+                        <span className="text-sm font-semibold text-green-600">
+                          {rec.expectedROI}% ROI
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => navigate('/recommendations')}
+                    className="w-full mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  >
+                    View all recommendations →
+                  </button>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">Loading recommendations...</p>
+              )}
+            </div>
+          </div>
+
+          {showForm && (
+            <PropertyFormWizard
+              onClose={() => setShowForm(false)}
+              onSuccess={fetchProperties}
+            />
+          )}
+
+          {/* Detailed Properties Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Your Properties ({properties.length})</h2>
+              <button
+                onClick={() => setShowForm(true)}
+                className="btn-primary px-4 py-2 text-sm"
+              >
+                + Add Property
+              </button>
+            </div>
+
+            {properties.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {properties.map(property => (
+                  <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition-all duration-300">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="ui-card-title font-bold text-lg">{property.title}</h3>
+                      <span className={`inline-block px-2 py-1 text-xs rounded ${
+                        property.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {property.status}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      <p className="text-gray-600">📍 {property.location.city}, {property.location.state}</p>
+                      <p className="text-sm text-gray-500">
+                        🏠 {property.propertyType} • {property.bedrooms} BHK • {property.builUpArea} sq ft
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        📅 Age: {property.age} years • Condition: {property.condition}
+                      </p>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-2xl font-bold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Current Value</p>
+                      </div>
+                      <button
+                        onClick={() => navigate('/valuation')}
+                        className="btn-secondary px-3 py-2 text-sm"
+                      >
+                        Get Valuation
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                <div className="text-6xl mb-4">🏠</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Properties Yet</h3>
+                <p className="text-gray-600 mb-6">Start building your property portfolio by adding your first property.</p>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="btn-primary px-6 py-3"
+                >
+                  Add Your First Property
+                </button>
+              </div>
             )}
           </div>
         </div>
