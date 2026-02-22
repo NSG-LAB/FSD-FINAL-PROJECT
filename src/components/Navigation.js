@@ -27,6 +27,8 @@ const Navigation = () => {
     }`
   );
 
+  const registerClass = 'btn-success px-4 py-2 text-sm font-medium';
+
   return (
     <nav className="fixed top-0 inset-x-0 z-50 bg-blue-600 text-white shadow-lg">
       <div className="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
@@ -69,7 +71,7 @@ const Navigation = () => {
           ) : (
             <>
               <NavLink to="/login" className={linkClass}>Login</NavLink>
-              <NavLink to="/register" className="bg-green-500 px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 transition">
+              <NavLink to="/register" className={registerClass}>
                 Register
               </NavLink>
             </>
@@ -102,7 +104,7 @@ const Navigation = () => {
           ) : (
             <>
               <NavLink to="/login" className={linkClass}>Login</NavLink>
-              <NavLink to="/register" className="block bg-green-500 px-4 py-2 rounded-md text-sm font-medium text-center hover:bg-green-600 transition">
+              <NavLink to="/register" className={`block ${registerClass} text-center`}>
                 Register
               </NavLink>
             </>

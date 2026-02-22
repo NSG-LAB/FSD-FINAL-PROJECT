@@ -34,9 +34,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">Welcome Back</h2>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center ui-page py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full ui-card rounded-2xl p-8">
+        <h2 className="ui-card-title text-3xl font-bold text-center mb-2">Welcome Back</h2>
         <p className="text-center text-sm text-gray-600 mb-6">Sign in to manage your properties and recommendations.</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -68,7 +68,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-md hover:bg-blue-700 transition font-semibold"
+            className="w-full btn-primary py-2.5 px-4"
           >
             Login
           </button>

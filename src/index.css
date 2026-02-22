@@ -2,6 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text: #0f172a;
+  --color-text-muted: #475569;
+  --color-primary: #1e3a8a;
+  --color-primary-hover: #1e2f6f;
+  --color-primary-light: #dbeafe;
+  --color-emerald: #059669;
+  --color-emerald-hover: #047857;
+  --card-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.dark {
+  --color-bg: #0f172a;
+  --color-surface: #111827;
+  --color-border: #1f2937;
+  --color-text: #f1f5f9;
+  --color-text-muted: #cbd5e1;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #1e293b;
+  --color-emerald: #059669;
+  --color-emerald-hover: #047857;
+  --card-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+}
+
+@layer components {
+  .ui-page {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .ui-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .ui-card-item {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .ui-card-title {
+    color: var(--color-primary);
+  }
+
+  .ui-positive {
+    color: var(--color-emerald);
+  }
+
+  .btn-base {
+    @apply rounded-md font-semibold transition;
+  }
+
+  .btn-primary {
+    @apply btn-base text-white;
+    background-color: var(--color-primary);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-hover);
+  }
+
+  .btn-secondary {
+    @apply btn-base border;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: transparent;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-primary-light);
+  }
+
+  .btn-success {
+    @apply btn-base text-white;
+    background-color: var(--color-emerald);
+  }
+
+  .btn-success:hover {
+    background-color: var(--color-emerald-hover);
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -14,8 +102,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--color-bg);
+  color: var(--color-text);
   line-height: 1.5;
 }
 

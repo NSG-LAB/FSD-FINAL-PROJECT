@@ -72,10 +72,10 @@ const ValuationEstimator = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen ui-page py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-xl shadow p-8 border border-slate-200">
-          <h2 className="text-3xl font-bold mb-2">Property Valuation Estimator</h2>
+        <div className="ui-card rounded-xl p-8">
+          <h2 className="ui-card-title text-3xl font-bold mb-2">Property Valuation Estimator</h2>
           <p className="text-gray-600 mb-6">Estimate your current and improved property value using key property factors.</p>
 
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -153,7 +153,7 @@ const ValuationEstimator = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 disabled:opacity-60 font-semibold"
+                className="btn-primary px-6 py-2.5 disabled:opacity-60"
               >
                 {loading ? 'Estimating...' : 'Estimate Value'}
               </button>
@@ -170,19 +170,19 @@ const ValuationEstimator = () => {
             <div className="mt-8 border-t pt-6">
               <h3 className="text-xl font-semibold mb-4">Estimated Results</h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                <div className="ui-card-item rounded-lg p-4">
                   <p className="text-sm text-gray-600">Current Value</p>
                   <p className="font-bold text-lg">₹{result.currentValue?.toLocaleString()}</p>
                 </div>
-                <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+                <div className="ui-card-item rounded-lg p-4">
                   <p className="text-sm text-gray-600">Improved Value</p>
-                  <p className="font-bold text-lg">₹{result.improvedValue?.toLocaleString()}</p>
+                  <p className="ui-positive font-bold text-lg">₹{result.improvedValue?.toLocaleString()}</p>
                 </div>
-                <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
+                <div className="ui-card-item rounded-lg p-4">
                   <p className="text-sm text-gray-600">Confidence</p>
                   <p className="font-bold text-lg capitalize">{result.confidence}</p>
                 </div>
-                <div className="bg-yellow-50 border border-yellow-100 rounded-lg p-4">
+                <div className="ui-card-item rounded-lg p-4">
                   <p className="text-sm text-gray-600">Range</p>
                   <p className="font-bold text-lg">₹{result.range?.min?.toLocaleString()} - ₹{result.range?.max?.toLocaleString()}</p>
                 </div>
@@ -191,7 +191,7 @@ const ValuationEstimator = () => {
               <button
                 type="button"
                 onClick={exportReport}
-                className="mt-5 px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700"
+                className="mt-5 px-4 py-2 btn-secondary"
               >
                 Export PDF Report
               </button>

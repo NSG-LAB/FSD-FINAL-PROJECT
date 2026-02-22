@@ -69,15 +69,15 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen ui-page py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-8">
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+        <div className="ui-card rounded-xl p-8">
+          <h1 className="ui-card-title text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-gray-600 mb-6">Create and manage enhancement recommendations for all users.</p>
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="mb-6 bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 font-semibold transition"
+            className="mb-6 btn-primary px-6 py-2.5"
           >
             {showForm ? 'Cancel' : 'Create Recommendation'}
           </button>
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
 
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-2.5 rounded-md hover:bg-green-700 font-semibold transition"
+                className="w-full btn-success py-2.5"
               >
                 Create Recommendation
               </button>
@@ -208,14 +208,14 @@ const AdminDashboard = () => {
             <h2 className="text-2xl font-semibold mb-4">Recommendations ({recommendations.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendations.map(rec => (
-                <div key={rec._id} className="border border-slate-200 rounded-xl p-5 hover:shadow-lg transition">
-                  <h3 className="font-bold text-lg mb-2">{rec.title}</h3>
+                <div key={rec._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
+                  <h3 className="ui-card-title font-bold text-lg mb-2">{rec.title}</h3>
                   <p className="text-gray-600 mb-2 text-sm">{rec.description ? `${rec.description.substring(0, 100)}...` : 'No description available.'}</p>
                   <div className="flex justify-between mb-2">
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{rec.category}</span>
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{rec.difficulty}</span>
                   </div>
-                  <p className="text-sm text-gray-500">ROI: <strong>{rec.expectedROI}%</strong></p>
+                  <p className="text-sm text-gray-500">ROI: <strong className="ui-positive">{rec.expectedROI}%</strong></p>
                   {rec.estimatedCost && (
                     <p className="text-sm text-gray-500">Cost: ₹{rec.estimatedCost.min?.toLocaleString()} - ₹{rec.estimatedCost.max?.toLocaleString()}</p>
                   )}

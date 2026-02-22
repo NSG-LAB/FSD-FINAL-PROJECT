@@ -73,15 +73,15 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen ui-page py-8">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-8">
-          <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
+        <div className="ui-card rounded-xl p-8">
+          <h1 className="ui-card-title text-3xl font-bold mb-2">User Dashboard</h1>
           <p className="text-gray-600 mb-6">Track your submitted properties and add new ones for tailored recommendations.</p>
 
           <button
             onClick={() => setShowForm(!showForm)}
-            className="mb-6 bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 font-semibold transition"
+            className="mb-6 btn-primary px-6 py-2.5"
           >
             {showForm ? 'Cancel' : 'Submit Property'}
           </button>
@@ -230,7 +230,7 @@ const UserDashboard = () => {
 
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-2.5 rounded-md hover:bg-green-700 font-semibold transition"
+                className="w-full btn-success py-2.5"
               >
                 Submit Property
               </button>
@@ -241,11 +241,11 @@ const UserDashboard = () => {
             <h2 className="text-2xl font-semibold mb-4">Your Properties ({properties.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {properties.map(property => (
-                <div key={property._id} className="border border-slate-200 rounded-xl p-5 hover:shadow-lg transition">
-                  <h3 className="font-bold text-lg mb-2">{property.title}</h3>
+                <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
+                  <h3 className="ui-card-title font-bold text-lg mb-2">{property.title}</h3>
                   <p className="text-gray-600 mb-2">{property.location.city}, {property.location.state}</p>
                   <p className="text-sm text-gray-500">{property.propertyType} • {property.bedrooms} BHK</p>
-                  <p className="mt-2 text-green-600 font-semibold">₹{property.currentValue?.toLocaleString()}</p>
+                  <p className="mt-2 ui-positive font-semibold">₹{property.currentValue?.toLocaleString()}</p>
                   <span className="inline-block mt-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
                     {property.status}
                   </span>

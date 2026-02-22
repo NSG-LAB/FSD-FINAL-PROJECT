@@ -60,10 +60,10 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="min-h-screen ui-page py-8">
       <div className="max-w-5xl mx-auto px-4">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-8">
-          <h1 className="text-3xl font-bold mb-2">Notifications &amp; Reminders</h1>
+        <div className="ui-card rounded-xl p-8">
+          <h1 className="ui-card-title text-3xl font-bold mb-2">Notifications &amp; Reminders</h1>
           <p className="text-gray-600 mb-6">Create reminders and keep track of pending tasks across your property improvements.</p>
 
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-slate-50 border border-slate-200 rounded-lg p-4">
@@ -85,7 +85,7 @@ const Notifications = () => {
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2.5 rounded-md hover:bg-blue-700 font-semibold transition"
+              className="btn-primary px-4 py-2.5"
             >
               Add Reminder
             </button>
@@ -107,7 +107,7 @@ const Notifications = () => {
               {notifications.map((item) => (
                 <div
                   key={item.id}
-                  className={`border rounded-lg p-4 ${item.isRead ? 'bg-gray-50 border-slate-200' : 'bg-blue-50 border-blue-200'}`}
+                  className={`rounded-lg p-4 ${item.isRead ? 'ui-card-item' : 'bg-blue-50 border border-blue-200'}`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -123,7 +123,7 @@ const Notifications = () => {
                       <button
                         type="button"
                         onClick={() => markRead(item.id)}
-                        className="text-sm px-3 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 transition"
+                        className="text-sm px-3 py-1.5 btn-success"
                       >
                         Mark Read
                       </button>

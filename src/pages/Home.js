@@ -5,7 +5,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="ui-page bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Hero Section */}
       <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
@@ -18,13 +18,13 @@ const Home = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
           <button
             onClick={() => navigate('/register')}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-semibold transition"
+            className="btn-primary px-8 py-3 rounded-lg"
           >
             Get Started
           </button>
           <button
             onClick={() => navigate('/recommendations')}
-            className="bg-white text-blue-600 px-8 py-3 rounded-lg border-2 border-blue-600 hover:bg-blue-50 font-semibold transition"
+            className="btn-secondary px-8 py-3 rounded-lg border-2"
           >
             View Recommendations
           </button>
@@ -37,22 +37,22 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us?</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 border border-slate-200 rounded-xl hover:shadow-lg transition">
-              <h3 className="text-xl font-bold mb-4">📊 Data-Driven</h3>
+            <div className="ui-card-item p-6 rounded-xl hover:shadow-lg transition">
+              <h3 className="ui-card-title text-xl font-bold mb-4">📊 Data-Driven</h3>
               <p className="text-gray-600">
                 Get recommendations based on real market data for your neighborhood and property type.
               </p>
             </div>
 
-            <div className="p-6 border border-slate-200 rounded-xl hover:shadow-lg transition">
-              <h3 className="text-xl font-bold mb-4">💡 Expert Insights</h3>
+            <div className="ui-card-item p-6 rounded-xl hover:shadow-lg transition">
+              <h3 className="ui-card-title text-xl font-bold mb-4">💡 Expert Insights</h3>
               <p className="text-gray-600">
                 Curated suggestions from industry experts focused on the Indian residential market.
               </p>
             </div>
 
-            <div className="p-6 border border-slate-200 rounded-xl hover:shadow-lg transition">
-              <h3 className="text-xl font-bold mb-4">📈 ROI Focused</h3>
+            <div className="ui-card-item p-6 rounded-xl hover:shadow-lg transition">
+              <h3 className="ui-card-title text-xl font-bold mb-4">📈 ROI Focused</h3>
               <p className="text-gray-600">
                 Understand the potential return on investment for every improvement suggestion.
               </p>
@@ -78,9 +78,9 @@ const Home = () => {
               { icon: '🛋️', name: 'Interior Design', desc: 'Space optimization' },
               { icon: '🔧', name: 'Electrical & Plumbing', desc: 'Modern infrastructure' },
             ].map((category, idx) => (
-              <div key={idx} className="bg-white p-5 rounded-xl border border-slate-200 hover:shadow-lg transition">
+              <div key={idx} className="ui-card-item p-5 rounded-xl hover:shadow-lg transition">
                 <div className="text-3xl mb-2">{category.icon}</div>
-                <h4 className="font-bold mb-1">{category.name}</h4>
+                <h4 className="ui-card-title font-bold mb-1">{category.name}</h4>
                 <p className="text-sm text-gray-600">{category.desc}</p>
               </div>
             ))}
@@ -95,7 +95,7 @@ const Home = () => {
           <p className="text-lg mb-6">Join thousands of homeowners enhancing their properties</p>
           <button
             onClick={() => navigate('/register')}
-            className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-100 font-semibold transition"
+            className="btn-secondary px-8 py-3 rounded-lg border-white text-white hover:text-white"
           >
             Start Your Journey
           </button>
