@@ -25,7 +25,11 @@ const Login = () => {
       toast.success('Login successful!');
       navigate(response.data.user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
+      const validationErrors = error.response?.data?.errors;
+      const detailedMessage = Array.isArray(validationErrors)
+        ? validationErrors.map((item) => item.message).join(', ')
+        : null;
+      const message = detailedMessage || error.response?.data?.message || 'Login failed';
       dispatch(setError(message));
       toast.error(message);
     } finally {

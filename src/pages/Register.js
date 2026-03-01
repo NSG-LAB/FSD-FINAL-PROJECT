@@ -32,7 +32,11 @@ const Register = () => {
       toast.success('Registration successful!');
       navigate('/user/dashboard');
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
+      const validationErrors = error.response?.data?.errors;
+      const detailedMessage = Array.isArray(validationErrors)
+        ? validationErrors.map((item) => item.message).join(', ')
+        : null;
+      const message = detailedMessage || error.response?.data?.message || 'Registration failed';
       dispatch(setError(message));
       toast.error(message);
     } finally {
@@ -93,9 +97,13 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={8}
+              pattern="(?=.*[A-Z])(?=.*[0-9]).{8,}"
+              title="Minimum 8 characters, including 1 uppercase letter and 1 number"
               placeholder="Create a secure password"
               className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="mt-1 text-xs text-gray-500">Use at least 8 characters with 1 uppercase letter and 1 number.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

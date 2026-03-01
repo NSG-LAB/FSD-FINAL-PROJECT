@@ -1,13 +1,84 @@
 import axios from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const explicitBaseURL = import.meta.env.VITE_API_URL;
+const isDev = import.meta.env.DEV;
+const DEV_API_CACHE_KEY = 'dev_api_base_url';
+
+const probeApiHealth = async (port) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 700);
+
+  try {
+    const response = await fetch(`http://localhost:${port}/api/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    });
+
+    if (response.ok) {
+      return `http://localhost:${port}/api`;
+    }
+  } catch (_) {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  return null;
+};
+
+const resolveDevBaseURL = async () => {
+  if (typeof window === 'undefined') {
+    return '/api';
+  }
+
+  const cachedBaseURL = window.sessionStorage.getItem(DEV_API_CACHE_KEY);
+  if (cachedBaseURL) {
+    return cachedBaseURL;
+  }
+
+  const candidatePorts = [];
+  for (let port = 5001; port <= 5025; port += 1) {
+    candidatePorts.push(port);
+  }
+  candidatePorts.push(5000);
+
+  for (const port of candidatePorts) {
+    const discoveredBaseURL = await probeApiHealth(port);
+    if (discoveredBaseURL) {
+      window.sessionStorage.setItem(DEV_API_CACHE_KEY, discoveredBaseURL);
+      return discoveredBaseURL;
+    }
+  }
+
+  return '/api';
+};
+
+let resolvedBaseURLPromise = null;
+const getResolvedBaseURL = () => {
+  if (explicitBaseURL) {
+    return Promise.resolve(explicitBaseURL);
+  }
+
+  if (!isDev) {
+    return Promise.resolve('/api');
+  }
+
+  if (!resolvedBaseURLPromise) {
+    resolvedBaseURLPromise = resolveDevBaseURL();
+  }
+
+  return resolvedBaseURLPromise;
+};
 
 const api = axios.create({
-  baseURL,
+  baseURL: explicitBaseURL || '/api',
 });
 
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    const resolvedBaseURL = await getResolvedBaseURL();
+    config.baseURL = resolvedBaseURL;
+
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
