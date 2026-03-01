@@ -76,7 +76,9 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
       onSuccess();
       onClose();
     } catch (error) {
-      toast.error('Failed to submit property');
+      const validationMessage = error?.response?.data?.errors?.[0]?.message;
+      const apiMessage = error?.response?.data?.message;
+      toast.error(validationMessage || apiMessage || 'Failed to submit property');
     }
   };
 
@@ -247,8 +249,8 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
               >
                 <option value="excellent">⭐ Excellent - Like new condition</option>
                 <option value="good">✅ Good - Well maintained</option>
-                <option value="fair">⚠️ Fair - Needs some repairs</option>
-                <option value="poor">🔧 Poor - Major repairs needed</option>
+                <option value="average">⚠️ Average - Needs some repairs</option>
+                <option value="needs-work">🔧 Needs Work - Major repairs needed</option>
               </select>
             </div>
           </div>
