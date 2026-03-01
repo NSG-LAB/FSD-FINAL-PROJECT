@@ -2,10 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { recommendationAPI } from '../services/api';
 import { toast } from 'react-toastify';
 
+const DEFAULT_RECOMMENDATION_PAGE_SIZE = 9;
+
 const Recommendations = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({ category: '', difficulty: '' });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_RECOMMENDATION_PAGE_SIZE);
+  const [searchInput, setSearchInput] = useState('');
+  const [query, setQuery] = useState('');
+  const [pagination, setPagination] = useState({
+    count: 0,
+    limit: DEFAULT_RECOMMENDATION_PAGE_SIZE,
+    offset: 0,
+    hasMore: false
+  });
 
   const truncate = (text, length = 110) => {
     if (!text) {
@@ -16,19 +28,53 @@ const Recommendations = () => {
 
   useEffect(() => {
     fetchRecommendations();
-  }, [filters]);
+  }, [filters, page, pageSize, query]);
 
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
-      const response = await recommendationAPI.getRecommendations(filters);
-      setRecommendations(response.data.recommendations);
+      const offset = (page - 1) * pageSize;
+      const response = await recommendationAPI.getRecommendations({
+        ...filters,
+        q: query,
+        limit: pageSize,
+        offset,
+        sortBy: 'priority',
+        order: 'DESC'
+      });
+      setRecommendations(response.data.recommendations || []);
+      setPagination({
+        count: response.data.count || 0,
+        limit: response.data.limit || pageSize,
+        offset: response.data.offset || 0,
+        hasMore: Boolean(response.data.hasMore)
+      });
     } catch (error) {
       toast.error('Failed to fetch recommendations');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleFilterChange = (key, value) => {
+    setPage(1);
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const applySearch = () => {
+    setPage(1);
+    setQuery(searchInput.trim());
+  };
+
+  const clearSearch = () => {
+    setSearchInput('');
+    setPage(1);
+    setQuery('');
+  };
+
+  const totalPages = Math.max(1, Math.ceil(pagination.count / pagination.limit));
+  const showingFrom = pagination.count === 0 ? 0 : pagination.offset + 1;
+  const showingTo = pagination.offset + recommendations.length;
 
   return (
     <div className="min-h-screen ui-page py-8">
@@ -37,12 +83,12 @@ const Recommendations = () => {
           <h1 className="ui-card-title text-3xl font-bold mb-2">Property Enhancement Recommendations</h1>
           <p className="text-gray-600 mb-6">Browse improvements by category and difficulty to prioritize your next upgrade.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 bg-slate-50 border border-slate-200 rounded-lg p-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
               <select
                 value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
                 className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Categories</option>
@@ -60,7 +106,7 @@ const Recommendations = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
               <select
                 value={filters.difficulty}
-                onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
+                onChange={(e) => handleFilterChange('difficulty', e.target.value)}
                 className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Difficulty Levels</option>
@@ -68,6 +114,52 @@ const Recommendations = () => {
                 <option value="moderate">Moderate</option>
                 <option value="difficult">Difficult</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    applySearch();
+                  }
+                }}
+                placeholder="Title contains..."
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rows Per Page</label>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPage(1);
+                  setPageSize(Number(e.target.value));
+                }}
+                className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={9}>9</option>
+                <option value={18}>18</option>
+                <option value={36}>36</option>
+              </select>
+            </div>
+            <div className="flex items-end gap-2">
+              <button
+                onClick={applySearch}
+                className="btn-secondary px-4 py-2.5 text-sm"
+              >
+                Search
+              </button>
+              {query && (
+                <button
+                  onClick={clearSearch}
+                  className="btn-secondary px-4 py-2.5 text-sm"
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
@@ -126,6 +218,32 @@ const Recommendations = () => {
 
           {!loading && recommendations.length === 0 && (
             <p className="text-center text-gray-500 py-10">No recommendations found for the selected filters.</p>
+          )}
+
+          {!loading && (
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              {pagination.count > 0 ? `Showing ${showingFrom}–${showingTo} of ${pagination.count}` : 'Showing 0 of 0'}
+            </p>
+          )}
+
+          {!loading && pagination.count > pagination.limit && (
+            <div className="mt-8 flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
+              <button
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                disabled={page === 1 || loading}
+                className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ← Previous
+              </button>
+              <p className="text-sm text-gray-600">Page {page} of {totalPages}</p>
+              <button
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={!pagination.hasMore || loading}
+                className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
           )}
         </div>
       </div>

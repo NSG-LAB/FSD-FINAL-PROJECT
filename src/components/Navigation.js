@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/authSlice';
+import { authAPI } from '../services/api';
 
 const Navigation = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -14,7 +15,12 @@ const Navigation = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      // Keep client-side logout as fallback even if API call fails
+    }
     dispatch(logout());
     navigate('/');
   };

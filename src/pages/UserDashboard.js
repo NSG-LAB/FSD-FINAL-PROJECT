@@ -7,12 +7,24 @@ import { useNavigate } from 'react-router-dom';
 import PropertyFormWizard from '../components/PropertyFormWizard';
 import SkeletonLoader from '../components/SkeletonLoader';
 
+const DEFAULT_PROPERTY_PAGE_SIZE = 6;
+
 const UserDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { properties, loading } = useSelector(state => state.property);
   const [showForm, setShowForm] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
+  const [propertyPage, setPropertyPage] = useState(1);
+  const [propertyPageSize, setPropertyPageSize] = useState(DEFAULT_PROPERTY_PAGE_SIZE);
+  const [propertySearchInput, setPropertySearchInput] = useState('');
+  const [propertyQuery, setPropertyQuery] = useState('');
+  const [propertyPagination, setPropertyPagination] = useState({
+    count: 0,
+    limit: DEFAULT_PROPERTY_PAGE_SIZE,
+    offset: 0,
+    hasMore: false
+  });
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalValue: 0,
@@ -21,27 +33,45 @@ const UserDashboard = () => {
   });
 
   useEffect(() => {
-    fetchProperties();
-  }, []);
+    fetchProperties(propertyPage, propertyPageSize, propertyQuery);
+  }, [propertyPage, propertyPageSize, propertyQuery]);
 
-  const fetchProperties = async () => {
+  const fetchProperties = async (page = 1, pageSize = propertyPageSize, query = propertyQuery) => {
     dispatch(setLoading(true));
     try {
+      const offset = (page - 1) * pageSize;
       const [propertiesRes, recommendationsRes] = await Promise.all([
-        propertyAPI.getProperties(),
-        recommendationAPI.getRecommendations()
+        propertyAPI.getProperties({
+          limit: pageSize,
+          offset,
+          q: query,
+          sortBy: 'createdAt',
+          order: 'DESC'
+        }),
+        recommendationAPI.getRecommendations({
+          limit: 3,
+          offset: 0,
+          sortBy: 'priority',
+          order: 'DESC'
+        })
       ]);
 
-      dispatch(setProperties(propertiesRes.data.properties));
+      dispatch(setProperties(propertiesRes.data.properties || []));
       setRecommendations(recommendationsRes.data.recommendations || []);
+      setPropertyPagination({
+        count: propertiesRes.data.count || 0,
+        limit: propertiesRes.data.limit || pageSize,
+        offset: propertiesRes.data.offset || 0,
+        hasMore: Boolean(propertiesRes.data.hasMore)
+      });
 
       // Calculate stats
       const properties = propertiesRes.data.properties || [];
       const totalValue = properties.reduce((sum, prop) => sum + (prop.currentValue || 0), 0);
-      const pendingRecommendations = recommendationsRes.data.recommendations?.length || 0;
+      const pendingRecommendations = recommendationsRes.data.count || 0;
 
       setStats({
-        totalProperties: properties.length,
+        totalProperties: propertiesRes.data.count || 0,
         totalValue,
         pendingRecommendations,
         completedImprovements: 0 // This would come from a separate API in a real app
@@ -51,6 +81,30 @@ const UserDashboard = () => {
     } finally {
       dispatch(setLoading(false));
     }
+  };
+
+  const totalPropertyPages = Math.max(1, Math.ceil(propertyPagination.count / propertyPagination.limit));
+  const propertyFrom = propertyPagination.count === 0 ? 0 : propertyPagination.offset + 1;
+  const propertyTo = propertyPagination.offset + properties.length;
+
+  const applyPropertySearch = () => {
+    setPropertyPage(1);
+    setPropertyQuery(propertySearchInput.trim());
+  };
+
+  const clearPropertySearch = () => {
+    setPropertySearchInput('');
+    setPropertyPage(1);
+    setPropertyQuery('');
+  };
+
+  const handlePropertyCreated = async () => {
+    setShowForm(false);
+    if (propertyPage !== 1) {
+      setPropertyPage(1);
+      return;
+    }
+    await fetchProperties(1);
   };
 
   return (
@@ -223,62 +277,131 @@ const UserDashboard = () => {
           {showForm && (
             <PropertyFormWizard
               onClose={() => setShowForm(false)}
-              onSuccess={fetchProperties}
+              onSuccess={handlePropertyCreated}
             />
           )}
 
           {/* Detailed Properties Section */}
           <div className="border-t border-gray-200 pt-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Your Properties ({properties.length})</h2>
-              <button
-                onClick={() => setShowForm(true)}
-                className="btn-primary px-4 py-2 text-sm"
-              >
-                + Add Property
-              </button>
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">Your Properties ({propertyPagination.count})</h2>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                <input
+                  type="text"
+                  value={propertySearchInput}
+                  onChange={(e) => setPropertySearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      applyPropertySearch();
+                    }
+                  }}
+                  placeholder="Search title or description"
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={applyPropertySearch}
+                  className="btn-secondary px-3 py-2 text-sm"
+                >
+                  Search
+                </button>
+                {propertyQuery && (
+                  <button
+                    onClick={clearPropertySearch}
+                    className="btn-secondary px-3 py-2 text-sm"
+                  >
+                    Clear
+                  </button>
+                )}
+                <select
+                  value={propertyPageSize}
+                  onChange={(e) => {
+                    setPropertyPage(1);
+                    setPropertyPageSize(Number(e.target.value));
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={6}>6 / page</option>
+                  <option value={12}>12 / page</option>
+                  <option value={24}>24 / page</option>
+                </select>
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="btn-primary px-4 py-2 text-sm"
+                >
+                  + Add Property
+                </button>
+              </div>
             </div>
 
             {properties.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {properties.map(property => (
-                  <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition-all duration-300">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="ui-card-title font-bold text-lg">{property.title}</h3>
-                      <span className={`inline-block px-2 py-1 text-xs rounded ${
-                        property.status === 'approved' ? 'bg-green-100 text-green-800' :
-                        property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {property.status}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 mb-4">
-                      <p className="text-gray-600">📍 {property.location.city}, {property.location.state}</p>
-                      <p className="text-sm text-gray-500">
-                        🏠 {property.propertyType} • {property.bedrooms} BHK • {property.builUpArea} sq ft
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        📅 Age: {property.age} years • Condition: {property.condition}
-                      </p>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-2xl font-bold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">Current Value</p>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {properties.map(property => (
+                    <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition-all duration-300">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="ui-card-title font-bold text-lg">{property.title}</h3>
+                        <span className={`inline-block px-2 py-1 text-xs rounded ${
+                          property.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {property.status}
+                        </span>
                       </div>
-                      <button
-                        onClick={() => navigate('/valuation')}
-                        className="btn-secondary px-3 py-2 text-sm"
-                      >
-                        Get Valuation
-                      </button>
+
+                      <div className="space-y-2 mb-4">
+                        <p className="text-gray-600">📍 {property.location.city}, {property.location.state}</p>
+                        <p className="text-sm text-gray-500">
+                          🏠 {property.propertyType} • {property.bedrooms} BHK • {property.builUpArea} sq ft
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          📅 Age: {property.age} years • Condition: {property.condition}
+                        </p>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-2xl font-bold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
+                          <p className="text-sm text-gray-600">Current Value</p>
+                        </div>
+                        <button
+                          onClick={() => navigate('/valuation')}
+                          className="btn-secondary px-3 py-2 text-sm"
+                        >
+                          Get Valuation
+                        </button>
+                      </div>
                     </div>
+                  ))}
+                </div>
+
+                <p className="mt-4 text-xs text-gray-500 text-center">
+                  {propertyPagination.count > 0
+                    ? `Showing ${propertyFrom}–${propertyTo} of ${propertyPagination.count}`
+                    : 'Showing 0 of 0'}
+                </p>
+
+                {propertyPagination.count > propertyPagination.limit && (
+                  <div className="mt-6 flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
+                    <button
+                      onClick={() => setPropertyPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={propertyPage === 1 || loading}
+                      className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Previous
+                    </button>
+                    <p className="text-sm text-gray-600">Page {propertyPage} of {totalPropertyPages}</p>
+                    <button
+                      onClick={() => setPropertyPage((prev) => prev + 1)}
+                      disabled={!propertyPagination.hasMore || loading}
+                      className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                 <div className="text-6xl mb-4">🏠</div>
