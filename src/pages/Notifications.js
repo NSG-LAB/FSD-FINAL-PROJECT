@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { notificationAPI } from '../services/api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { notificationAPI, showApiErrorToast } from '../services/api';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     message: '',
@@ -13,11 +15,17 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const response = await notificationAPI.getNotifications();
       setNotifications(response.data.notifications || []);
     } catch (error) {
-      toast.error('Failed to load notifications');
+      setLoadError('We could not load notifications right now.');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to load notifications. Please try again.',
+        onRetry: fetchNotifications,
+      });
     } finally {
       setLoading(false);
     }
@@ -32,19 +40,29 @@ const Notifications = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const createReminder = async (payload) => {
+    await notificationAPI.createReminder(payload);
+    toast.success('Reminder created');
+    setFormData({ title: '', message: '', dueAt: '' });
+    fetchNotifications();
+  };
+
   const handleCreate = async (event) => {
     event.preventDefault();
+    const payload = {
+      title: formData.title,
+      message: formData.message,
+      dueAt: formData.dueAt ? new Date(formData.dueAt).toISOString() : null,
+    };
+
     try {
-      await notificationAPI.createReminder({
-        title: formData.title,
-        message: formData.message,
-        dueAt: formData.dueAt ? new Date(formData.dueAt).toISOString() : null,
-      });
-      toast.success('Reminder created');
-      setFormData({ title: '', message: '', dueAt: '' });
-      fetchNotifications();
+      await createReminder(payload);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create reminder');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to create reminder. Please try again.',
+        onRetry: () => createReminder(payload),
+      });
     }
   };
 
@@ -55,7 +73,11 @@ const Notifications = () => {
         prev.map((item) => (item.id === id ? { ...item, isRead: true } : item))
       );
     } catch (error) {
-      toast.error('Failed to mark notification as read');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to mark notification as read. Please try again.',
+        onRetry: () => markRead(id),
+      });
     }
   };
 
@@ -101,7 +123,24 @@ const Notifications = () => {
           </form>
 
           {loading ? (
-            <p className="text-gray-600 py-6">Loading notifications...</p>
+            <div className="space-y-3 py-2">
+              {[...Array(3)].map((_, index) => (
+                <SkeletonLoader key={index} type="card" className="h-28" />
+              ))}
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
+              <div className="text-4xl mb-3">⚠️</div>
+              <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load notifications</h3>
+              <p className="text-red-700 mb-5">{loadError}</p>
+              <button
+                type="button"
+                onClick={fetchNotifications}
+                className="btn-secondary px-5 py-2.5"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <div className="space-y-3">
               {notifications.map((item) => (
@@ -133,7 +172,11 @@ const Notifications = () => {
               ))}
 
               {notifications.length === 0 && (
-                <p className="text-gray-500 py-4">No notifications yet.</p>
+                <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                  <div className="text-5xl mb-3">🔔</div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No notifications yet</h3>
+                  <p className="text-gray-600">Create a reminder above to get started.</p>
+                </div>
               )}
             </div>
           )}

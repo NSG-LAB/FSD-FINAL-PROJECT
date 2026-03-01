@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProperties, setLoading } from '../redux/propertySlice';
-import { propertyAPI, recommendationAPI, valuationAPI } from '../services/api';
-import { toast } from 'react-toastify';
+import { propertyAPI, recommendationAPI, valuationAPI, showApiErrorToast } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import PropertyFormWizard from '../components/PropertyFormWizard';
 import SkeletonLoader from '../components/SkeletonLoader';
@@ -19,6 +18,7 @@ const UserDashboard = () => {
   const [propertyPageSize, setPropertyPageSize] = useState(DEFAULT_PROPERTY_PAGE_SIZE);
   const [propertySearchInput, setPropertySearchInput] = useState('');
   const [propertyQuery, setPropertyQuery] = useState('');
+  const [dashboardError, setDashboardError] = useState(null);
   const [propertyPagination, setPropertyPagination] = useState({
     count: 0,
     limit: DEFAULT_PROPERTY_PAGE_SIZE,
@@ -38,6 +38,7 @@ const UserDashboard = () => {
 
   const fetchProperties = async (page = 1, pageSize = propertyPageSize, query = propertyQuery) => {
     dispatch(setLoading(true));
+    setDashboardError(null);
     try {
       const offset = (page - 1) * pageSize;
       const [propertiesRes, recommendationsRes] = await Promise.all([
@@ -77,7 +78,12 @@ const UserDashboard = () => {
         completedImprovements: 0 // This would come from a separate API in a real app
       });
     } catch (error) {
-      toast.error('Failed to fetch dashboard data');
+      setDashboardError('Dashboard data is temporarily unavailable.');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to fetch dashboard data. Please try again.',
+        onRetry: () => fetchProperties(page, pageSize, query),
+      });
     } finally {
       dispatch(setLoading(false));
     }
@@ -242,7 +248,24 @@ const UserDashboard = () => {
 
             <div className="bg-white border border-gray-200 rounded-xl p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">💡 Recommended Improvements</h2>
-              {recommendations.length > 0 ? (
+              {loading ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, index) => (
+                    <SkeletonLoader key={index} type="card" className="h-24" />
+                  ))}
+                </div>
+              ) : dashboardError ? (
+                <div className="text-center py-8 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-red-700 mb-3">Could not load recommendations.</p>
+                  <button
+                    type="button"
+                    onClick={() => fetchProperties(propertyPage, propertyPageSize, propertyQuery)}
+                    className="btn-secondary px-4 py-2 text-sm"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : recommendations.length > 0 ? (
                 <div className="space-y-3">
                   {recommendations.slice(0, 3).map(rec => (
                     <div key={rec._id} className="p-3 bg-blue-50 rounded-lg">
@@ -269,7 +292,9 @@ const UserDashboard = () => {
                   </button>
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">Loading recommendations...</p>
+                <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <p className="text-gray-600">No recommendations available yet.</p>
+                </div>
               )}
             </div>
           </div>
@@ -334,7 +359,26 @@ const UserDashboard = () => {
               </div>
             </div>
 
-            {properties.length > 0 ? (
+            {loading ? (
+              <div className="space-y-4">
+                {[...Array(4)].map((_, index) => (
+                  <SkeletonLoader key={index} type="property-list" />
+                ))}
+              </div>
+            ) : dashboardError ? (
+              <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
+                <div className="text-5xl mb-4">⚠️</div>
+                <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load properties</h3>
+                <p className="text-red-700 mb-6">{dashboardError}</p>
+                <button
+                  type="button"
+                  onClick={() => fetchProperties(propertyPage, propertyPageSize, propertyQuery)}
+                  className="btn-secondary px-6 py-3"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : properties.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {properties.map(property => (

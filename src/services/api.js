@@ -1,7 +1,18 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
-const explicitBaseURL = import.meta.env.VITE_API_URL;
-const isDev = import.meta.env.DEV;
+const readViteEnv = () => {
+  try {
+    return Function('return import.meta.env')();
+  } catch (_) {
+    return undefined;
+  }
+};
+
+const viteEnv = readViteEnv() || {};
+const nodeEnv = typeof process !== 'undefined' && process.env ? process.env : {};
+const explicitBaseURL = viteEnv.VITE_API_URL || nodeEnv.VITE_API_URL;
+const isDev = typeof viteEnv.DEV === 'boolean' ? viteEnv.DEV : nodeEnv.NODE_ENV !== 'production';
 const DEV_API_CACHE_KEY = 'dev_api_base_url';
 
 const probeApiHealth = async (port) => {
@@ -73,6 +84,56 @@ const getResolvedBaseURL = () => {
 const api = axios.create({
   baseURL: explicitBaseURL || '/api',
 });
+
+const getApiErrorMessage = (error, fallbackMessage = 'Request failed. Please try again.') => {
+  const responseMessage = error?.response?.data?.message;
+
+  if (responseMessage && typeof responseMessage === 'string') {
+    return responseMessage;
+  }
+
+  if (error?.code === 'ECONNABORTED') {
+    return 'Request timed out. Please check your connection and retry.';
+  }
+
+  if (!error?.response) {
+    return 'Unable to reach the server. Please check your connection and retry.';
+  }
+
+  return fallbackMessage;
+};
+
+export const showApiErrorToast = ({
+  error,
+  fallbackMessage,
+  onRetry,
+}) => {
+  const message = getApiErrorMessage(error, fallbackMessage);
+
+  toast.error(
+    ({ closeToast }) => (
+      <div className="space-y-2">
+        <p className="text-sm">{message}</p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={() => {
+              closeToast?.();
+              onRetry();
+            }}
+            className="btn-secondary px-3 py-1.5 text-xs"
+          >
+            Retry
+          </button>
+        )}
+      </div>
+    ),
+    {
+      autoClose: false,
+      closeOnClick: false,
+    }
+  );
+};
 
 api.interceptors.request.use(
   async (config) => {

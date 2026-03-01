@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { recommendationAPI } from '../services/api';
-import { toast } from 'react-toastify';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { recommendationAPI, showApiErrorToast } from '../services/api';
 
 const DEFAULT_RECOMMENDATION_PAGE_SIZE = 9;
 
@@ -12,6 +12,7 @@ const Recommendations = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_RECOMMENDATION_PAGE_SIZE);
   const [searchInput, setSearchInput] = useState('');
   const [query, setQuery] = useState('');
+  const [loadError, setLoadError] = useState(null);
   const [pagination, setPagination] = useState({
     count: 0,
     limit: DEFAULT_RECOMMENDATION_PAGE_SIZE,
@@ -32,6 +33,7 @@ const Recommendations = () => {
 
   const fetchRecommendations = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const offset = (page - 1) * pageSize;
       const response = await recommendationAPI.getRecommendations({
@@ -50,7 +52,12 @@ const Recommendations = () => {
         hasMore: Boolean(response.data.hasMore)
       });
     } catch (error) {
-      toast.error('Failed to fetch recommendations');
+      setLoadError('We could not load recommendations for these filters.');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to fetch recommendations. Please try again.',
+        onRetry: fetchRecommendations,
+      });
     } finally {
       setLoading(false);
     }
@@ -164,7 +171,24 @@ const Recommendations = () => {
           </div>
 
           {loading ? (
-            <p className="text-center text-gray-600 py-10">Loading recommendations...</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(Math.min(pageSize, 9))].map((_, index) => (
+                <SkeletonLoader key={index} type="card" className="h-72" />
+              ))}
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
+              <div className="text-4xl mb-3">⚠️</div>
+              <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load recommendations</h3>
+              <p className="text-red-700 mb-5">{loadError}</p>
+              <button
+                type="button"
+                onClick={fetchRecommendations}
+                className="btn-secondary px-5 py-2.5"
+              >
+                Retry
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recommendations.map(rec => (
@@ -216,17 +240,21 @@ const Recommendations = () => {
             </div>
           )}
 
-          {!loading && recommendations.length === 0 && (
-            <p className="text-center text-gray-500 py-10">No recommendations found for the selected filters.</p>
+          {!loading && !loadError && recommendations.length === 0 && (
+            <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+              <div className="text-5xl mb-3">🔎</div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No recommendations found</h3>
+              <p className="text-gray-600">Try changing your search text or filter selections.</p>
+            </div>
           )}
 
-          {!loading && (
+          {!loading && !loadError && (
             <p className="mt-4 text-xs text-gray-500 text-center">
               {pagination.count > 0 ? `Showing ${showingFrom}–${showingTo} of ${pagination.count}` : 'Showing 0 of 0'}
             </p>
           )}
 
-          {!loading && pagination.count > pagination.limit && (
+          {!loading && !loadError && pagination.count > pagination.limit && (
             <div className="mt-8 flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
               <button
                 onClick={() => setPage((prev) => Math.max(prev - 1, 1))}

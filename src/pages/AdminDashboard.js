@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setRecommendations, setLoading, addRecommendation } from '../redux/recommendationSlice';
-import { recommendationAPI, analyticsAPI } from '../services/api';
+import SkeletonLoader from '../components/SkeletonLoader';
+import { recommendationAPI, analyticsAPI, showApiErrorToast } from '../services/api';
 import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
-  const { recommendations } = useSelector(state => state.recommendation);
+  const { recommendations, loading: recommendationsLoading } = useSelector(state => state.recommendation);
   const [activeTab, setActiveTab] = useState('overview');
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(null);
+  const [recommendationsError, setRecommendationsError] = useState(null);
   const [analyticsData, setAnalyticsData] = useState({
     overview: null,
     userActivity: null,
@@ -36,17 +40,25 @@ const AdminDashboard = () => {
 
   const fetchRecommendations = async () => {
     dispatch(setLoading(true));
+    setRecommendationsError(null);
     try {
       const response = await recommendationAPI.getRecommendations();
       dispatch(setRecommendations(response.data.recommendations));
     } catch (error) {
-      toast.error('Failed to fetch recommendations');
+      setRecommendationsError('Could not load recommendations at the moment.');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to fetch recommendations. Please try again.',
+        onRetry: fetchRecommendations,
+      });
     } finally {
       dispatch(setLoading(false));
     }
   };
 
   const fetchAnalyticsData = async () => {
+    setAnalyticsLoading(true);
+    setAnalyticsError(null);
     try {
       const [overviewRes, userActivityRes, propertiesRes, performanceRes] = await Promise.all([
         analyticsAPI.getOverview(),
@@ -62,7 +74,14 @@ const AdminDashboard = () => {
         performance: performanceRes.data.data
       });
     } catch (error) {
-      toast.error('Failed to fetch analytics data');
+      setAnalyticsError('Analytics data is currently unavailable.');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to fetch analytics data. Please try again.',
+        onRetry: fetchAnalyticsData,
+      });
+    } finally {
+      setAnalyticsLoading(false);
     }
   };
 
@@ -71,33 +90,79 @@ const AdminDashboard = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const createRecommendation = async (payload) => {
+    const response = await recommendationAPI.createRecommendation(payload);
+    dispatch(addRecommendation(response.data.recommendation));
+    toast.success('Recommendation created successfully!');
+    setShowForm(false);
+    setFormData({
+      title: '',
+      category: 'kitchen-bathroom',
+      description: '',
+      benefits: [],
+      estimatedCost: { min: 0, max: 0 },
+      expectedROI: 0,
+      difficulty: 'moderate',
+      timeframe: '',
+      tips: [],
+      applicablePropertyTypes: ['all'],
+      applicableConditions: [],
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = { ...formData };
+
     try {
-      const response = await recommendationAPI.createRecommendation(formData);
-      dispatch(addRecommendation(response.data.recommendation));
-      toast.success('Recommendation created successfully!');
-      setShowForm(false);
-      setFormData({
-        title: '',
-        category: 'kitchen-bathroom',
-        description: '',
-        benefits: [],
-        estimatedCost: { min: 0, max: 0 },
-        expectedROI: 0,
-        difficulty: 'moderate',
-        timeframe: '',
-        tips: [],
-        applicablePropertyTypes: ['all'],
-        applicableConditions: [],
-      });
+      await createRecommendation(payload);
     } catch (error) {
-      toast.error('Failed to create recommendation');
+      showApiErrorToast({
+        error,
+        fallbackMessage: 'Failed to create recommendation. Please try again.',
+        onRetry: () => createRecommendation(payload),
+      });
     }
   };
 
+  const renderAnalyticsState = (emptyMessage = 'No data available.') => {
+    if (analyticsLoading) {
+      return (
+        <div className="space-y-4">
+          <SkeletonLoader type="dashboard-stats" />
+          <SkeletonLoader type="table" />
+        </div>
+      );
+    }
+
+    if (analyticsError) {
+      return (
+        <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
+          <div className="text-4xl mb-3">⚠️</div>
+          <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load analytics</h3>
+          <p className="text-red-700 mb-5">{analyticsError}</p>
+          <button
+            type="button"
+            onClick={fetchAnalyticsData}
+            className="btn-secondary px-5 py-2.5"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+        <p className="text-gray-600">{emptyMessage}</p>
+      </div>
+    );
+  };
+
   const renderOverviewTab = () => {
-    if (!analyticsData.overview) return <div className="text-center py-8">Loading analytics data...</div>;
+    if (!analyticsData.overview) {
+      return renderAnalyticsState('No overview data available yet.');
+    }
 
     const { users, properties, recommendations, notifications, distributions } = analyticsData.overview;
 
@@ -128,7 +193,9 @@ const AdminDashboard = () => {
   };
 
   const renderUserActivityTab = () => {
-    if (!analyticsData.userActivity) return <div className="text-center py-8">Loading user activity data...</div>;
+    if (!analyticsData.userActivity) {
+      return renderAnalyticsState('No user activity data available yet.');
+    }
 
     const { userRegistrations, propertySubmissions, topUsers } = analyticsData.userActivity;
 
@@ -179,7 +246,9 @@ const AdminDashboard = () => {
   };
 
   const renderPropertiesTab = () => {
-    if (!analyticsData.properties) return <div className="text-center py-8">Loading properties data...</div>;
+    if (!analyticsData.properties) {
+      return renderAnalyticsState('No property analytics data available yet.');
+    }
 
     const { statusDistribution, locationDistribution, averageValues } = analyticsData.properties;
 
@@ -225,7 +294,9 @@ const AdminDashboard = () => {
   };
 
   const renderPerformanceTab = () => {
-    if (!analyticsData.performance) return <div className="text-center py-8">Loading performance data...</div>;
+    if (!analyticsData.performance) {
+      return renderAnalyticsState('No system performance data available yet.');
+    }
 
     const { system, database, cache } = analyticsData.performance;
 
@@ -454,24 +525,46 @@ const AdminDashboard = () => {
 
               <div className="border-t border-slate-200 pt-6">
                 <h2 className="text-2xl font-semibold mb-4">Recommendations ({recommendations.length})</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {recommendations.map(rec => (
-                    <div key={rec._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
-                      <h3 className="ui-card-title font-bold text-lg mb-2">{rec.title}</h3>
-                      <p className="text-gray-600 mb-2 text-sm">{rec.description ? `${rec.description.substring(0, 100)}...` : 'No description available.'}</p>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{rec.category}</span>
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{rec.difficulty}</span>
+                {recommendationsLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[...Array(4)].map((_, index) => (
+                      <SkeletonLoader key={index} type="card" className="h-56" />
+                    ))}
+                  </div>
+                ) : recommendationsError ? (
+                  <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
+                    <div className="text-4xl mb-3">⚠️</div>
+                    <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load recommendations</h3>
+                    <p className="text-red-700 mb-5">{recommendationsError}</p>
+                    <button
+                      type="button"
+                      onClick={fetchRecommendations}
+                      className="btn-secondary px-5 py-2.5"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : recommendations.length === 0 ? (
+                  <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                    <p className="text-gray-600">No recommendations available yet. Create one to get started.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {recommendations.map(rec => (
+                      <div key={rec._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
+                        <h3 className="ui-card-title font-bold text-lg mb-2">{rec.title}</h3>
+                        <p className="text-gray-600 mb-2 text-sm">{rec.description ? `${rec.description.substring(0, 100)}...` : 'No description available.'}</p>
+                        <div className="flex justify-between mb-2">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{rec.category}</span>
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{rec.difficulty}</span>
+                        </div>
+                        <p className="text-sm text-gray-500">ROI: <strong className="ui-positive">{rec.expectedROI}%</strong></p>
+                        {rec.estimatedCost && (
+                          <p className="text-sm text-gray-500">Cost: ₹{rec.estimatedCost.min?.toLocaleString()} - ₹{rec.estimatedCost.max?.toLocaleString()}</p>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-500">ROI: <strong className="ui-positive">{rec.expectedROI}%</strong></p>
-                      {rec.estimatedCost && (
-                        <p className="text-sm text-gray-500">Cost: ₹{rec.estimatedCost.min?.toLocaleString()} - ₹{rec.estimatedCost.max?.toLocaleString()}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {recommendations.length === 0 && (
-                  <p className="text-gray-500 mt-4">No recommendations available yet. Create one to get started.</p>
+                    ))}
+                  </div>
                 )}
               </div>
             </>
