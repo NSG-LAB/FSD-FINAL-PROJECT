@@ -35,8 +35,18 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchRecommendations();
-    fetchAnalyticsData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'recommendations') {
+      return;
+    }
+
+    const analyticsKey = activeTab === 'activity' ? 'userActivity' : activeTab;
+    if (!analyticsData[analyticsKey]) {
+      fetchAnalyticsData(activeTab);
+    }
+  }, [activeTab, analyticsData]);
 
   const fetchRecommendations = async () => {
     dispatch(setLoading(true));
@@ -56,29 +66,41 @@ const AdminDashboard = () => {
     }
   };
 
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = async (tab = activeTab) => {
+    const requestByTab = {
+      overview: analyticsAPI.getOverview,
+      activity: analyticsAPI.getUserActivity,
+      properties: analyticsAPI.getProperties,
+      performance: analyticsAPI.getPerformance,
+    };
+    const dataKeyByTab = {
+      overview: 'overview',
+      activity: 'userActivity',
+      properties: 'properties',
+      performance: 'performance',
+    };
+
+    const request = requestByTab[tab];
+    const dataKey = dataKeyByTab[tab];
+    if (!request || !dataKey) {
+      return;
+    }
+
     setAnalyticsLoading(true);
     setAnalyticsError(null);
     try {
-      const [overviewRes, userActivityRes, propertiesRes, performanceRes] = await Promise.all([
-        analyticsAPI.getOverview(),
-        analyticsAPI.getUserActivity(),
-        analyticsAPI.getProperties(),
-        analyticsAPI.getPerformance()
-      ]);
+      const response = await request();
 
-      setAnalyticsData({
-        overview: overviewRes.data.data,
-        userActivity: userActivityRes.data.data,
-        properties: propertiesRes.data.data,
-        performance: performanceRes.data.data
-      });
+      setAnalyticsData((prev) => ({
+        ...prev,
+        [dataKey]: response.data.data,
+      }));
     } catch (error) {
-      setAnalyticsError('Analytics data is currently unavailable.');
+      setAnalyticsError('Analytics data is currently unavailable for this tab.');
       showApiErrorToast({
         error,
         fallbackMessage: 'Failed to fetch analytics data. Please try again.',
-        onRetry: fetchAnalyticsData,
+        onRetry: () => fetchAnalyticsData(tab),
       });
     } finally {
       setAnalyticsLoading(false);

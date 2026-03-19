@@ -86,7 +86,7 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slideUp">
             <div>
               <label className="block mobile-text font-medium text-gray-700 mb-2">
                 Property Title *
@@ -123,7 +123,7 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
 
       case 2:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slideUp">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block mobile-text font-medium text-gray-700 mb-2">
@@ -193,7 +193,7 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
 
       case 3:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slideUp">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block mobile-text font-medium text-gray-700 mb-2">
@@ -258,7 +258,7 @@ const PropertyFormWizard = ({ onClose, onSuccess }) => {
 
       case 4:
         return (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-slideUp">
             <div>
               <label className="block mobile-text font-medium text-gray-700 mb-2">
                 Current Market Value (₹) *

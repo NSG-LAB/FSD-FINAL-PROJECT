@@ -14,6 +14,7 @@ const nodeEnv = typeof process !== 'undefined' && process.env ? process.env : {}
 const explicitBaseURL = viteEnv.VITE_API_URL || nodeEnv.VITE_API_URL;
 const isDev = typeof viteEnv.DEV === 'boolean' ? viteEnv.DEV : nodeEnv.NODE_ENV !== 'production';
 const DEV_API_CACHE_KEY = 'dev_api_base_url';
+const DEFAULT_DEV_PORT = Number(viteEnv.VITE_API_PORT || nodeEnv.VITE_API_PORT || 5000);
 
 const probeApiHealth = async (port) => {
   const controller = new AbortController();
@@ -47,18 +48,16 @@ const resolveDevBaseURL = async () => {
     return cachedBaseURL;
   }
 
-  const candidatePorts = [];
-  for (let port = 5001; port <= 5025; port += 1) {
-    candidatePorts.push(port);
-  }
-  candidatePorts.push(5000);
+  const candidatePorts = [DEFAULT_DEV_PORT, 5000, 5001, 5002, 5003, 5004, 5005]
+    .filter((port, index, allPorts) => Number.isInteger(port) && port > 0 && allPorts.indexOf(port) === index);
 
-  for (const port of candidatePorts) {
-    const discoveredBaseURL = await probeApiHealth(port);
-    if (discoveredBaseURL) {
-      window.sessionStorage.setItem(DEV_API_CACHE_KEY, discoveredBaseURL);
-      return discoveredBaseURL;
-    }
+  const probePromises = candidatePorts.map((port) => probeApiHealth(port));
+  const probeResults = await Promise.all(probePromises);
+  const discoveredBaseURL = probeResults.find(Boolean);
+
+  if (discoveredBaseURL) {
+    window.sessionStorage.setItem(DEV_API_CACHE_KEY, discoveredBaseURL);
+    return discoveredBaseURL;
   }
 
   return '/api';
@@ -81,8 +80,11 @@ const getResolvedBaseURL = () => {
   return resolvedBaseURLPromise;
 };
 
+export const primeApiConnection = () => getResolvedBaseURL().catch(() => '/api');
+
 const api = axios.create({
   baseURL: explicitBaseURL || '/api',
+  timeout: 30000, // 30 second timeout to prevent hanging requests
 });
 
 const getApiErrorMessage = (error, fallbackMessage = 'Request failed. Please try again.') => {
@@ -148,6 +150,11 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+if (typeof window !== 'undefined') {
+  // Warm up API base URL discovery so the first user action does not pay this cost.
+  primeApiConnection();
+}
 
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),

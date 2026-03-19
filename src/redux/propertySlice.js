@@ -25,13 +25,13 @@ const propertySlice = createSlice({
       state.properties.push(action.payload);
     },
     updateProperty: (state, action) => {
-      const index = state.properties.findIndex(p => p._id === action.payload._id);
+      const index = state.properties.findIndex(p => p.id === action.payload.id);
       if (index !== -1) {
         state.properties[index] = action.payload;
       }
     },
     deleteProperty: (state, action) => {
-      state.properties = state.properties.filter(p => p._id !== action.payload);
+      state.properties = state.properties.filter(p => p.id !== action.payload);
     },
     setFilters: (state, action) => {
       state.filters = action.payload;

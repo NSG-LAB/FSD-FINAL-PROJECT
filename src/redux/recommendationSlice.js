@@ -25,13 +25,13 @@ const recommendationSlice = createSlice({
       state.recommendations.push(action.payload);
     },
     updateRecommendation: (state, action) => {
-      const index = state.recommendations.findIndex(r => r._id === action.payload._id);
+      const index = state.recommendations.findIndex(r => r.id === action.payload.id);
       if (index !== -1) {
         state.recommendations[index] = action.payload;
       }
     },
     deleteRecommendation: (state, action) => {
-      state.recommendations = state.recommendations.filter(r => r._id !== action.payload);
+      state.recommendations = state.recommendations.filter(r => r.id !== action.payload);
     },
     setFilters: (state, action) => {
       state.filters = action.payload;

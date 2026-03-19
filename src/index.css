@@ -30,22 +30,156 @@
   --card-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
 }
 
+/* ===== ANIMATIONS ===== */
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide Up Animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide Down Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Shake Animation for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Shimmer Animation for skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Scale Animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Rotate Animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Heartbeat Animation */
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.1);
+  }
+  50% {
+    transform: scale(1);
+  }
+}
+
+/* Glow Animation */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
 @layer components {
   .ui-page {
     background-color: var(--color-bg);
     color: var(--color-text);
+    animation: fadeIn 0.4s ease-out;
   }
 
   .ui-card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     box-shadow: var(--card-shadow);
+    animation: slideUp 0.5s ease-out;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .ui-card:hover {
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    transform: translateY(-4px);
   }
 
   .ui-card-item {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     box-shadow: var(--card-shadow);
+    animation: slideUp 0.5s ease-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .ui-card-item:hover {
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+    transform: translateY(-6px);
+    border-color: var(--color-primary);
   }
 
   .ui-card-title {
@@ -57,7 +191,21 @@
   }
 
   .btn-base {
-    @apply rounded-md font-semibold transition-all duration-200 min-h-[44px] px-4 py-2;
+    @apply rounded-md font-semibold transition-all duration-300 min-h-[44px] px-4 py-2;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Button hover lift effect */
+  .btn-base:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Button active press effect */
+  .btn-base:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .btn-primary {
@@ -67,6 +215,12 @@
 
   .btn-primary:hover {
     background-color: var(--color-primary-hover);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .btn-secondary {
@@ -80,6 +234,12 @@
     background-color: var(--color-primary-light);
   }
 
+  .btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   .btn-success {
     @apply btn-base text-white;
     background-color: var(--color-emerald);
@@ -87,6 +247,12 @@
 
   .btn-success:hover {
     background-color: var(--color-emerald-hover);
+  }
+
+  .btn-success:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 
   /* Mobile-first responsive utilities */
@@ -100,6 +266,7 @@
 
   .mobile-heading {
     @apply text-xl sm:text-2xl lg:text-3xl;
+    animation: slideDown 0.5s ease-out;
   }
 
   .mobile-card {
@@ -126,6 +293,122 @@
 
   .mobile-margin {
     @apply mx-4 sm:mx-6 lg:mx-auto;
+  }
+
+  /* Form inputs with smooth animation */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  /* Label animations */
+  label {
+    transition: all 0.2s ease-out;
+  }
+
+  /* Smooth transitions for dropdowns */
+  select {
+    transition: all 0.2s ease-out;
+  }
+
+  /* Skeleton loader shimmer */
+  .skeleton {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+    background-size: 1000px 100%;
+  }
+
+  /* Loading spinner animation */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  /* Fade animations for list items */
+  .fade-in-item {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Stagger animation for multiple items */
+  .stagger-container > * {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .stagger-container > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-container > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger-container > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-container > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger-container > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-container > *:nth-child(6) { animation-delay: 0.3s; }
+
+  /* Error state shake animation */
+  .error-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* Success checkmark animation */
+  .success-pulse {
+    animation: pulse 0.6s ease-in-out;
+  }
+
+  /* Chart entrance animation */
+  .chart-container {
+    animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Card entrance with stagger */
+  .card-grid > .ui-card-item {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .card-grid > .ui-card-item:nth-child(1) { animation-delay: 0.05s; }
+  .card-grid > .ui-card-item:nth-child(2) { animation-delay: 0.1s; }
+  .card-grid > .ui-card-item:nth-child(3) { animation-delay: 0.15s; }
+  .card-grid > .ui-card-item:nth-child(4) { animation-delay: 0.2s; }
+  .card-grid > .ui-card-item:nth-child(5) { animation-delay: 0.25s; }
+  .card-grid > .ui-card-item:nth-child(6) { animation-delay: 0.3s; }
+
+  /* Transition for theme changes */
+  * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+
+  /* Smooth page exit animation */
+  .page-exit {
+    animation: fadeOut 0.3s ease-in;
+  }
+
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  /* Modal/Dialog animations */
+  .modal-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .modal-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  /* Notification toast animations */
+  .toast-slide-in {
+    animation: slideDown 0.4s ease-out;
+  }
+
+  /* Glow effect for important elements */
+  .glow-effect {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  /* Smooth text selection animation */
+  ::selection {
+    background-color: var(--color-primary);
+    color: white;
+    animation: fadeIn 0.2s ease-out;
   }
 }
 
