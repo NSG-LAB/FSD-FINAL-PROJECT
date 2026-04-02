@@ -5,6 +5,7 @@ import { propertyAPI, recommendationAPI, valuationAPI, showApiErrorToast } from 
 import { useNavigate } from 'react-router-dom';
 import PropertyFormWizard from '../components/PropertyFormWizard';
 import SkeletonLoader from '../components/SkeletonLoader';
+import EnhancementChecklist from '../components/EnhancementChecklist';
 
 const DEFAULT_PROPERTY_PAGE_SIZE = 6;
 
@@ -404,7 +405,7 @@ const UserDashboard = () => {
                         </p>
                       </div>
 
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-center mb-4">
                         <div>
                           <p className="text-2xl font-bold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
                           <p className="text-sm text-gray-600">Current Value</p>
@@ -416,6 +417,9 @@ const UserDashboard = () => {
                           Get Valuation
                         </button>
                       </div>
+
+                      {/* Enhancement Checklist UI */}
+                      <EnhancementChecklist propertyId={property.id || property._id} userId={property.userId} />
                     </div>
                   ))}
                 </div>
