@@ -6,6 +6,7 @@ import { authAPI, primeApiConnection } from '../services/api';
 import { toast } from 'react-toastify';
 import OnboardingWizard from '../components/OnboardingWizard';
 import { preloadCommonDashboards, preloadDashboardByRole } from '../utils/routePreload';
+import { ArrowRight, BarChart3, Lightbulb, TrendingUp, ShieldCheck, Zap, Home as HomeIcon, Layers, Palette } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -14,7 +15,6 @@ const Home = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    // Show onboarding for authenticated users who haven't completed it
     if (isAuthenticated && user) {
       const onboardingCompleted = localStorage.getItem(`onboarding_completed_${user.id}`);
       if (!onboardingCompleted) {
@@ -36,19 +36,17 @@ const Home = () => {
     dispatch(setLoading(true));
     try {
       preloadDashboardByRole(role);
-
       const demoCredentials = {
         user: { email: 'user@demo.com', password: 'User@123456' },
         admin: { email: 'admin@demo.com', password: 'Admin@123456' },
       };
-
       const credentials = demoCredentials[role];
       const response = await authAPI.login(credentials);
       dispatch(setUser(response.data));
       toast.success(`${role.charAt(0).toUpperCase() + role.slice(1)} Demo Login successful!`);
       navigate(response.data.user.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
     } catch (error) {
-      const message = error.response?.data?.message || `${role} demo login failed. Please try manual login.`;
+      const message = error.response?.data?.message || `${role} demo login failed.`;
       dispatch(setError(message));
       toast.error(message);
     } finally {
@@ -57,166 +55,181 @@ const Home = () => {
   };
 
   return (
-    <div className="ui-page bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="max-w-6xl mx-auto mobile-container py-12 sm:py-16 md:py-24 text-center">
-        <h1 className="mobile-heading font-bold text-gray-900 mb-4 leading-tight pt-16">
-          🏠 Enhance Your Home's Value
-        </h1>
-        <p className="mobile-text text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto">
-          Get personalized property enhancement recommendations tailored for the Indian market
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 sm:mb-12">
-          <button
-            onClick={() => navigate('/register')}
-            className="btn-primary px-8 py-4 text-lg font-semibold touch-target"
-          >
-            Get Started
-          </button>
-          <button
-            onClick={() => navigate('/recommendations')}
-            className="btn-secondary px-8 py-4 text-lg font-semibold touch-target border-2"
-          >
-            View Recommendations
-          </button>
+      <section className="relative h-[90vh] flex items-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/modern_indian_home_interior_1775538259277.png" 
+            alt="Premium Home Interior" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo/90 via-indigo/60 to-transparent" />
         </div>
-      </div>
 
-      {/* Features Section */}
-      <div className="bg-white mobile-section border-y border-slate-200">
-        <div className="max-w-6xl mx-auto mobile-container">
-          <h2 className="mobile-heading font-bold text-center mb-8 sm:mb-12 text-gray-900">Why Choose Us?</h2>
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10 w-full text-white">
+          <div className="max-w-2xl animate-in fade-in slide-in-from-left-8 duration-700">
+            <h1 className="text-5xl md:text-7xl serif font-bold mb-6 leading-tight">
+              Unlock the <span className="text-gold">True Value</span> of Your Home
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-200 mb-10 leading-relaxed font-light">
+              Get data-driven enhancement recommendations tailored for the Indian market. Maximize your ROI with expert insights.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <button onClick={() => navigate('/register')} className="btn btn-gold py-4 px-8 text-lg">
+                Start Analysis <ArrowRight size={20} />
+              </button>
+              <button onClick={() => navigate('/recommendations')} className="btn btn-outline border-white text-white hover:bg-white hover:text-indigo py-4 px-8 text-lg">
+                View Samples
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <div className="mobile-grid gap-6 sm:gap-8 stagger-container">
-            <div className="ui-card-item mobile-card rounded-xl hover:shadow-lg transition-all duration-300">
-              <h3 className="ui-card-title text-lg sm:text-xl font-bold mb-3 sm:mb-4">📊 Data-Driven</h3>
-              <p className="mobile-text text-gray-600">
-                Get recommendations based on real market data for your neighborhood and property type.
+      {/* Stats/Social Proof */}
+      <section className="bg-indigo py-12 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center md:justify-between items-center gap-8 text-white/80">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-bold text-gold">10k+</span>
+            <span className="text-sm uppercase tracking-widest font-semibold">Homes Evaluated</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-bold text-gold">₹50Cr+</span>
+            <span className="text-sm uppercase tracking-widest font-semibold">Value Added</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-bold text-gold">4.9/5</span>
+            <span className="text-sm uppercase tracking-widest font-semibold">User Satisfaction</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 bg-cream">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl serif font-bold text-indigo mb-4">Why GharMulya?</h2>
+            <div className="h-1 w-24 bg-gold mx-auto rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="card text-center p-10">
+              <div className="w-16 h-16 bg-indigo/5 rounded-2xl flex items-center justify-center text-indigo mx-auto mb-6">
+                <BarChart3 size={32} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-indigo">Market Intelligence</h3>
+              <p className="text-gray-600 leading-relaxed">
+                We analyze hyper-local real estate trends across Indian metro cities to give you precise estimates.
               </p>
             </div>
 
-            <div className="ui-card-item mobile-card rounded-xl hover:shadow-lg transition-all duration-300">
-              <h3 className="ui-card-title text-lg sm:text-xl font-bold mb-3 sm:mb-4">💡 Expert Insights</h3>
-              <p className="mobile-text text-gray-600">
-                Curated suggestions from industry experts focused on the Indian residential market.
+            <div className="card text-center p-10">
+              <div className="w-16 h-16 bg-indigo/5 rounded-2xl flex items-center justify-center text-indigo mx-auto mb-6">
+                <TrendingUp size={32} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-indigo">ROI Verification</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Know exactly which upgrades pay off. We focus on enhancements that offer the highest capital appreciation.
               </p>
             </div>
 
-            <div className="ui-card-item mobile-card rounded-xl hover:shadow-lg transition-all duration-300">
-              <h3 className="ui-card-title text-lg sm:text-xl font-bold mb-3 sm:mb-4">📈 ROI Focused</h3>
-              <p className="mobile-text text-gray-600">
-                Understand the potential return on investment for every improvement suggestion.
+            <div className="card text-center p-10">
+              <div className="w-16 h-16 bg-indigo/5 rounded-2xl flex items-center justify-center text-indigo mx-auto mb-6">
+                <ShieldCheck size={32} />
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-indigo">Trusted Guidance</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Step-by-step guidance from vetting contractors to choosing the right materials for the climate.
               </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhancement Categories */}
-      <div className="mobile-section">
-        <div className="max-w-6xl mx-auto mobile-container">
-          <h2 className="mobile-heading font-bold text-center mb-8 sm:mb-12 text-gray-900">Enhancement Categories</h2>
+      {/* Categories Grid */}
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="max-w-xl text-left">
+              <h2 className="text-4xl serif font-bold text-indigo mb-4">Enhancement Categories</h2>
+              <p className="text-gray-600 text-lg">Specialized areas to focus your renovation efforts for maximum impact.</p>
+            </div>
+            <button onClick={() => navigate('/recommendations')} className="text-indigo font-bold flex items-center gap-2 group">
+              Browse All Categories <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
 
-          <div className="mobile-grid gap-4 sm:gap-6 card-grid">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[
-              { icon: '🍳', name: 'Kitchen & Bathroom', desc: 'Modern fittings and upgrades' },
-              { icon: '🪵', name: 'Flooring', desc: 'Premium flooring solutions' },
-              { icon: '🎨', name: 'Wall & Paint', desc: 'Color schemes and treatments' },
-              { icon: '💡', name: 'Lighting & Fixtures', desc: 'Modern lighting solutions' },
-              { icon: '🌿', name: 'Garden & Outdoor', desc: 'Landscaping and outdoor spaces' },
-              { icon: '🔒', name: 'Safety & Security', desc: 'Advanced security features' },
-              { icon: '⚡', name: 'Energy Efficiency', desc: 'Solar and water systems' },
-              { icon: '🛋️', name: 'Interior Design', desc: 'Space optimization' },
-              { icon: '🔧', name: 'Electrical & Plumbing', desc: 'Modern infrastructure' },
-            ].map((category, idx) => (
-              <div key={idx} className="ui-card-item mobile-card rounded-xl hover:shadow-lg transition-all duration-300">
-                <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{category.icon}</div>
-                <h4 className="ui-card-title font-bold mb-1 sm:mb-2 text-sm sm:text-base">{category.name}</h4>
-                <p className="mobile-text text-gray-600">{category.desc}</p>
+              { icon: <Layers />, name: 'Kitchen & Bath', desc: 'Modern fittings' },
+              { icon: <Zap />, name: 'Smart Energy', desc: 'Solar & Savings' },
+              { icon: <Palette />, name: 'Interior Paint', desc: 'Premium Finishes' },
+              { icon: <HomeIcon />, name: 'Exterior Facade', desc: 'Curb Appeal' },
+            ].map((cat, i) => (
+              <div key={i} className="group cursor-pointer">
+                <div className="card p-8 group-hover:bg-indigo group-hover:text-white h-full transition-all duration-300">
+                  <div className="mb-4 text-indigo group-hover:text-gold transition-colors">{cat.icon}</div>
+                  <h4 className="text-xl font-bold mb-2">{cat.name}</h4>
+                  <p className="text-sm opacity-70">{cat.desc}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* CTA Section */}
-      <div className="bg-blue-600 text-white mobile-section">
-        <div className="max-w-6xl mx-auto mobile-container text-center">
-          <h2 className="mobile-heading font-bold mb-4 sm:mb-6">Ready to Increase Your Property's Value?</h2>
-          <p className="mobile-text mb-6 sm:mb-8 max-w-2xl mx-auto">
-            Join thousands of homeowners enhancing their properties with expert recommendations
-          </p>
-          <button
-            onClick={() => navigate('/register')}
-            className="btn-secondary px-8 py-4 text-lg font-semibold touch-target border-white text-white hover:bg-white hover:text-blue-600 transition-all duration-200"
-          >
-            Start Your Journey
-          </button>
-        </div>
-      </div>
-
-      {/* Demo Access Section */}
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 mobile-section border-y border-indigo-200">
-        <div className="max-w-6xl mx-auto mobile-container">
-          <h2 className="mobile-heading font-bold text-center mb-4 sm:mb-6 text-gray-900 animate-slideDown">Try Demo Accounts</h2>
-          <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
-            Explore the platform features with our pre-configured demo accounts. No sign-up required!
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto stagger-container">
-            {/* User Demo Card */}
-            <div className="ui-card rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-blue-400">
-              <div className="text-4xl mb-3 animate-bounce">👤</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">User Demo</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Explore personal dashboard, property management, and personalized recommendations.
+      {/* Demo Section */}
+      <section className="py-24 bg-cream">
+        <div className="max-w-5xl mx-auto px-6 text-center">
+          <div className="bg-indigo rounded-3xl p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
+            <div className="relative z-10">
+              <h2 className="text-4xl serif font-bold mb-6">Experience the Platform</h2>
+              <p className="text-xl text-indigo-100 mb-12 max-w-2xl mx-auto">
+                Explore the dashboard with pre-configured demo accounts. No sign-up required.
               </p>
-              <button
-                onClick={() => handleDemoLogin('user')}
-                onMouseEnter={() => preloadDashboardByRole('user')}
-                onFocus={() => preloadDashboardByRole('user')}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-md transition-all duration-300 transform hover:scale-105 active:scale-95"
-              >
-                Try User Demo
-              </button>
-            </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                <button 
+                  onClick={() => handleDemoLogin('user')}
+                  className="bg-white/10 hover:bg-white/20 border border-white/20 p-6 rounded-2xl flex flex-col items-center transition-all group"
+                >
+                  <span className="text-4xl mb-4 group-hover:scale-110 transition-transform">👤</span>
+                  <span className="text-xl font-bold">User Demo</span>
+                  <span className="text-sm opacity-60 mt-1">Property Mgmt</span>
+                </button>
 
-            {/* Admin Demo Card */}
-            <div className="ui-card rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-400">
-              <div className="text-4xl mb-3 animate-bounce" style={{ animationDelay: '0.2s' }}>👨‍💼</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Admin Demo</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Access admin dashboard, analytics, system monitoring, and content management.
-              </p>
-              <button
-                onClick={() => handleDemoLogin('admin')}
-                onMouseEnter={() => preloadDashboardByRole('admin')}
-                onFocus={() => preloadDashboardByRole('admin')}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-md transition-all duration-300 transform hover:scale-105 active:scale-95"
-              >
-                Try Admin Demo
-              </button>
+                <button 
+                  onClick={() => handleDemoLogin('admin')}
+                  className="bg-gold text-indigo p-6 rounded-2xl flex flex-col items-center transition-all group"
+                >
+                  <span className="text-4xl mb-4 group-hover:scale-110 transition-transform">👨‍💼</span>
+                  <span className="text-xl font-bold">Admin Demo</span>
+                  <span className="text-sm opacity-80 mt-1">Full Analytics</span>
+                </button>
+              </div>
             </div>
+            {/* Abstract Background Shapes */}
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-gold/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-indigo/10 rounded-full blur-3xl shadow-white/5" />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 sm:py-12">
-        <div className="max-w-6xl mx-auto mobile-container text-center">
-          <p className="text-sm sm:text-base">&copy; 2026 Property Value Enhancement Platform. All rights reserved.</p>
-          <p className="mobile-text text-gray-400 mt-2">Designed for Indian middle-class homeowners</p>
+      {/* Pre-footer CTA */}
+      <section className="py-24 bg-white border-t border-indigo/5">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-4xl serif font-bold text-indigo mb-8">Ready to Elevate Your Living Space?</h2>
+          <button onClick={() => navigate('/register')} className="btn btn-primary py-4 px-12 text-xl shadow-xl">
+            Join GharMulya Today
+          </button>
         </div>
-      </footer>
+      </section>
 
-      {/* Onboarding Wizard */}
-      <OnboardingWizard
-        isOpen={showOnboarding}
-        onClose={handleOnboardingClose}
-      />
+      <OnboardingWizard isOpen={showOnboarding} onClose={handleOnboardingClose} />
     </div>
   );
 };
 
 export default Home;
+

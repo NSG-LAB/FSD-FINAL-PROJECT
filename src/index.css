@@ -2,19 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;600;700&display=swap');
+
 :root {
-  --color-bg: #f8fafc;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-text: #0f172a;
-  --color-text-muted: #475569;
-  --color-primary: #1e3a8a;
-  --color-primary-hover: #1e2f6f;
-  --color-primary-light: #dbeafe;
-  --color-emerald: #059669;
-  --color-emerald-hover: #047857;
-  --card-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --indigo: #1B1F4A;
+  --gold: #C9A84C;
+  --cream: #F9F7F4;
+  --coral: #D4614A;
+  --green: #2A6E48;
+  --text-main: #1B1F4A;
+  --text-muted: #6B7280;
+  --white: #FFFFFF;
+  --shadow: 0 12px 40px rgba(27, 31, 74, 0.08);
+  --radius: 12px;
+  
+  /* Legacy compatibility */
+  --color-bg: var(--cream);
+  --color-surface: var(--white);
+  --color-border: #E5E7EB;
+  --color-text: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-primary: var(--indigo);
+  --color-primary-hover: #15183D;
+  --color-primary-light: #F0F2FF;
+  --color-emerald: var(--green);
+  --color-emerald-hover: #1E5034;
+  --card-shadow: var(--shadow);
 }
+
 
 .dark {
   --color-bg: #0f172a;
@@ -419,18 +434,99 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  line-height: 1.5;
+  background-color: var(--cream);
+  color: var(--text-main);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6, .serif {
+  font-family: 'Fraunces', serif;
+  font-weight: 700;
+  color: var(--indigo);
 }
 
 a {
   text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+/* ══════════════ COMPONENTS ══════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  gap: 8px;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--indigo);
+  color: white;
+  box-shadow: 0 4px 12px rgba(27, 31, 74, 0.2);
+}
+.btn-primary:hover {
+  background: #252a63;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(27, 31, 74, 0.25);
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: var(--indigo);
+  box-shadow: 0 4px 12px rgba(201, 168, 76, 0.2);
+}
+.btn-gold:hover {
+  background: #d8b85c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--indigo);
+  color: var(--indigo);
+}
+.btn-outline:hover {
+  background: var(--indigo);
+  color: white;
+}
+
+.card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(27, 31, 74, 0.05);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(27, 31, 74, 0.12);
+}
+
+/* ══════════════ UTILITIES ══════════════ */
+.text-gold { color: var(--gold); }
+.bg-indigo { background: var(--indigo); }
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 code {

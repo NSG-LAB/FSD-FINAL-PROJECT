@@ -212,4 +212,14 @@ export const reportAPI = {
     }),
 };
 
+export const enhancementChecklistAPI = {
+  getByPropertyBefore: (propertyId) => api.get(`/enhancement-checklist/${propertyId}/before`),
+  getByPropertyAfter: (propertyId) => api.get(`/enhancement-checklist/${propertyId}/after`),
+  updateItem: (id, data) => api.put(`/enhancement-checklist/${id}`, data),
+  uploadFiles: (id, formData) => api.post(`/enhancement-checklist/upload/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteFile: (id, url) => api.delete(`/enhancement-checklist/file/${id}`, { data: { url } }),
+};
+
 export default api;

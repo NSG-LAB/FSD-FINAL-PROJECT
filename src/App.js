@@ -1,12 +1,16 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import Navigation from './components/Navigation';
+import Footer from './components/layout/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import SkeletonLoader from './components/SkeletonLoader';
+
+import { setUser, setLoading as setAuthLoading } from './redux/authSlice';
+import { userAPI } from './services/api';
 
 // Lazy load page components for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -20,24 +24,49 @@ const ROIPlanner = lazy(() => import('./pages/ROIPlanner'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const MonitoringDashboard = lazy(() => import('./pages/MonitoringDashboard'));
 
-const UserRoute = ({ children }) => {
-  const { isAuthenticated } = useSelector((state) => state.auth);
+const UserRoute = ({ children, appLoading }) => {
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  if (appLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Ensure user object exists before rendering protected children
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   return children;
 };
 
-const AdminRoute = ({ children }) => {
+const AdminRoute = ({ children, appLoading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  if (appLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'admin') {
+  if (!user || user?.role !== 'admin') {
     return <Navigate to="/user/dashboard" replace />;
   }
 
@@ -45,6 +74,29 @@ const AdminRoute = ({ children }) => {
 };
 
 function App() {
+  const dispatch = useDispatch();
+  const { token, user } = useSelector((state) => state.auth);
+  const [appLoading, setAppLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (token && !user) {
+        setAppLoading(true);
+        try {
+          const response = await userAPI.getProfile();
+          dispatch(setUser({ user: response.data.user, token }));
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+          // If token is invalid, it will be handled by axios interceptors or we could clear it here
+        } finally {
+          setAppLoading(false);
+        }
+      }
+    };
+
+    fetchProfile();
+  }, [token, user, dispatch]);
+
   return (
     <ErrorBoundary>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -71,7 +123,7 @@ function App() {
                 <Route
                   path="/user/dashboard"
                   element={(
-                    <UserRoute>
+                    <UserRoute appLoading={appLoading}>
                       <UserDashboard />
                     </UserRoute>
                   )}
@@ -79,7 +131,7 @@ function App() {
                 <Route
                   path="/admin/dashboard"
                   element={(
-                    <AdminRoute>
+                    <AdminRoute appLoading={appLoading}>
                       <AdminDashboard />
                     </AdminRoute>
                   )}
@@ -87,7 +139,7 @@ function App() {
                 <Route
                   path="/monitoring"
                   element={(
-                    <AdminRoute>
+                    <AdminRoute appLoading={appLoading}>
                       <MonitoringDashboard />
                     </AdminRoute>
                   )}
@@ -97,7 +149,7 @@ function App() {
                 <Route
                   path="/notifications"
                   element={(
-                    <UserRoute>
+                    <UserRoute appLoading={appLoading}>
                       <Notifications />
                     </UserRoute>
                   )}
@@ -106,6 +158,7 @@ function App() {
               </Routes>
             </Suspense>
           </main>
+          <Footer />
           <ToastContainer position="bottom-right" autoClose={3000} />
         </div>
       </Router>

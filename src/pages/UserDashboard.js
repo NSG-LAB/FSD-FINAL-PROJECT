@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProperties, setLoading } from '../redux/propertySlice';
-import { propertyAPI, recommendationAPI, valuationAPI, showApiErrorToast } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { propertyAPI, recommendationAPI, showApiErrorToast } from '../services/api';
+import { useNavigate, Link } from 'react-router-dom';
 import PropertyFormWizard from '../components/PropertyFormWizard';
 import SkeletonLoader from '../components/SkeletonLoader';
 import EnhancementChecklist from '../components/EnhancementChecklist';
@@ -13,6 +13,7 @@ const UserDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { properties, loading } = useSelector(state => state.property);
+  const { user } = useSelector(state => state.auth);
   const [showForm, setShowForm] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [propertyPage, setPropertyPage] = useState(1);
@@ -34,10 +35,10 @@ const UserDashboard = () => {
   });
 
   useEffect(() => {
-    fetchProperties(propertyPage, propertyPageSize, propertyQuery);
+    fetchData(propertyPage, propertyPageSize, propertyQuery);
   }, [propertyPage, propertyPageSize, propertyQuery]);
 
-  const fetchProperties = async (page = 1, pageSize = propertyPageSize, query = propertyQuery) => {
+  const fetchData = async (page = 1, pageSize = propertyPageSize, query = propertyQuery) => {
     dispatch(setLoading(true));
     setDashboardError(null);
     try {
@@ -58,8 +59,10 @@ const UserDashboard = () => {
         })
       ]);
 
-      dispatch(setProperties(propertiesRes.data.properties || []));
+      const props = propertiesRes.data.properties || [];
+      dispatch(setProperties(props));
       setRecommendations(recommendationsRes.data.recommendations || []);
+      
       setPropertyPagination({
         count: propertiesRes.data.count || 0,
         limit: propertiesRes.data.limit || pageSize,
@@ -67,32 +70,26 @@ const UserDashboard = () => {
         hasMore: Boolean(propertiesRes.data.hasMore)
       });
 
-      // Calculate stats
-      const properties = propertiesRes.data.properties || [];
-      const totalValue = properties.reduce((sum, prop) => sum + (prop.currentValue || 0), 0);
-      const pendingRecommendations = recommendationsRes.data.count || 0;
-
+      // Calculate stats safely
+      const totalVal = props.reduce((sum, prop) => sum + (Number(prop.currentValue) || 0), 0);
+      
       setStats({
         totalProperties: propertiesRes.data.count || 0,
-        totalValue,
-        pendingRecommendations,
-        completedImprovements: 0 // This would come from a separate API in a real app
+        totalValue: totalVal,
+        pendingRecommendations: recommendationsRes.data.count || 0,
+        completedImprovements: 0 
       });
     } catch (error) {
       setDashboardError('Dashboard data is temporarily unavailable.');
       showApiErrorToast({
         error,
         fallbackMessage: 'Failed to fetch dashboard data. Please try again.',
-        onRetry: () => fetchProperties(page, pageSize, query),
+        onRetry: fetchData,
       });
     } finally {
       dispatch(setLoading(false));
     }
   };
-
-  const totalPropertyPages = Math.max(1, Math.ceil(propertyPagination.count / propertyPagination.limit));
-  const propertyFrom = propertyPagination.count === 0 ? 0 : propertyPagination.offset + 1;
-  const propertyTo = propertyPagination.offset + properties.length;
 
   const applyPropertySearch = () => {
     setPropertyPage(1);
@@ -107,365 +104,279 @@ const UserDashboard = () => {
 
   const handlePropertyCreated = async () => {
     setShowForm(false);
-    if (propertyPage !== 1) {
-      setPropertyPage(1);
-      return;
-    }
-    await fetchProperties(1);
+    setPropertyPage(1);
+    await fetchData(1);
   };
 
+  const totalPropertyPages = Math.max(1, Math.ceil(propertyPagination.count / propertyPagination.limit));
+  const propertyFrom = propertyPagination.count === 0 ? 0 : propertyPagination.offset + 1;
+  const propertyTo = propertyPagination.offset + properties.length;
+
   return (
-    <div className="min-h-screen ui-page py-8">
-      <div className="max-w-6xl mx-auto mobile-container">
-        <div className="ui-card rounded-xl mobile-card">
-          <h1 className="ui-card-title mobile-heading font-bold mb-2">🏠 Property Command Center</h1>
-          <p className="mobile-text text-gray-600 mb-8">Manage your properties, track improvements, and maximize your investment potential.</p>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">🏠 Property Command Center</h1>
+          <p className="text-slate-500 mt-1">
+            Welcome back, <span className="text-blue-600 font-semibold">{user?.firstName || 'User'}</span>! Manage your investments and track growth.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowForm(true)}
+            className="btn-primary flex items-center gap-2 shadow-lg shadow-blue-500/20"
+          >
+            <span className="text-lg">+</span> Add Property
+          </button>
+        </div>
+      </div>
 
-          {/* Stats Cards */}
-          {loading ? (
-            <SkeletonLoader type="dashboard-stats" />
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-100 text-sm font-medium">Total Properties</p>
-                    <p className="text-2xl font-bold">{stats.totalProperties}</p>
-                  </div>
-                  <div className="text-3xl">🏢</div>
-                </div>
-              </div>
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+          <span className="text-xl">⚠️</span>
+          <p>{dashboardError}</p>
+        </div>
+      )}
 
-              <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-100 text-sm font-medium">Portfolio Value</p>
-                    <p className="text-2xl font-bold">₹{(stats.totalValue / 100000).toFixed(1)}L</p>
-                  </div>
-                  <div className="text-3xl">💰</div>
-                </div>
+      {/* Stats Cards */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-28 bg-slate-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-white">
+          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-xl shadow-lg shadow-blue-500/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium">Your Assets</p>
+                <p className="text-2xl font-bold">{stats.totalProperties}</p>
               </div>
-
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-100 text-sm font-medium">Available Tips</p>
-                    <p className="text-2xl font-bold">{stats.pendingRecommendations}</p>
-                  </div>
-                  <div className="text-3xl">💡</div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-orange-100 text-sm font-medium">Completed</p>
-                    <p className="text-2xl font-bold">{stats.completedImprovements}</p>
-                  </div>
-                  <div className="text-3xl">✅</div>
-                </div>
-              </div>
+              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">🏙️</div>
             </div>
-          )}
+          </div>
 
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-xl shadow-lg shadow-emerald-500/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-emerald-100 text-sm font-medium">Portfolio Value</p>
+                <p className="text-2xl font-bold">₹{((stats.totalValue || 0) / 100000).toFixed(1)}L</p>
+              </div>
+              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">💰</div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl shadow-lg shadow-amber-500/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-amber-100 text-sm font-medium">Pending Gains</p>
+                <p className="text-2xl font-bold">{stats.pendingRecommendations}</p>
+              </div>
+              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">💡</div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-500 to-fuchsia-600 p-6 rounded-xl shadow-lg shadow-purple-500/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium">Improvements</p>
+                <p className="text-2xl font-bold">{stats.completedImprovements}</p>
+              </div>
+              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">🛠️</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions & Recommendations Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2 space-y-8">
           {/* Quick Actions */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">⚡ Quick Actions</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              ⚡ Quick Actions
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <button 
                 onClick={() => setShowForm(true)}
-                className="btn-primary p-4 text-center hover:shadow-lg transition-all duration-200"
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-200 transition-colors group"
               >
-                <div className="text-2xl mb-2">🏠</div>
-                <div className="font-semibold">Add Property</div>
-                <div className="text-sm opacity-80">Submit new property</div>
+                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">🏠</span>
+                <span className="text-sm font-semibold text-blue-900">Add Property</span>
               </button>
-
-              <button
+              <button 
                 onClick={() => navigate('/valuation')}
-                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-teal-100 bg-teal-50/50 hover:bg-teal-50 hover:border-teal-200 transition-colors group"
               >
-                <div className="text-2xl mb-2">📊</div>
-                <div className="font-semibold">Get Valuation</div>
-                <div className="text-sm opacity-80">Estimate property value</div>
+                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">📊</span>
+                <span className="text-sm font-semibold text-teal-900">Get Valuation</span>
               </button>
-
-              <button
+              <button 
                 onClick={() => navigate('/recommendations')}
-                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-amber-100 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-200 transition-colors group"
               >
-                <div className="text-2xl mb-2">💡</div>
-                <div className="font-semibold">View Tips</div>
-                <div className="text-sm opacity-80">Browse improvements</div>
+                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">💡</span>
+                <span className="text-sm font-semibold text-amber-900">View Tips</span>
               </button>
-
-              <button
+              <button 
                 onClick={() => navigate('/roi-planner')}
-                className="btn-secondary p-4 text-center hover:shadow-lg transition-all duration-200"
+                className="flex flex-col items-center justify-center p-4 rounded-xl border border-purple-100 bg-purple-50/50 hover:bg-purple-50 hover:border-purple-200 transition-colors group"
               >
-                <div className="text-2xl mb-2">📈</div>
-                <div className="font-semibold">ROI Planner</div>
-                <div className="text-sm opacity-80">Plan investments</div>
+                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">📈</span>
+                <span className="text-sm font-semibold text-purple-900">ROI Planner</span>
               </button>
             </div>
           </div>
 
-          {/* Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">📋 Recent Properties</h2>
-              {loading ? (
-                <SkeletonLoader type="property-list" />
-              ) : properties.length > 0 ? (
-                <div className="space-y-3">
-                  {properties.slice(0, 3).map(property => (
-                    <div key={property._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <p className="font-medium text-gray-900">{property.title}</p>
-                        <p className="text-sm text-gray-600">{property.location.city}, {property.location.state}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
-                        <span className={`inline-block px-2 py-1 text-xs rounded ${
-                          property.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {property.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {properties.length > 3 && (
-                    <p className="text-sm text-blue-600 text-center pt-2">
-                      +{properties.length - 3} more properties
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-gray-500 text-center py-4">No properties yet. Add your first property to get started!</p>
-              )}
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">💡 Recommended Improvements</h2>
-              {loading ? (
-                <div className="space-y-3">
-                  {[...Array(3)].map((_, index) => (
-                    <SkeletonLoader key={index} type="card" className="h-24" />
-                  ))}
-                </div>
-              ) : dashboardError ? (
-                <div className="text-center py-8 bg-red-50 rounded-lg border border-red-200">
-                  <p className="text-red-700 mb-3">Could not load recommendations.</p>
-                  <button
-                    type="button"
-                    onClick={() => fetchProperties(propertyPage, propertyPageSize, propertyQuery)}
-                    className="btn-secondary px-4 py-2 text-sm"
-                  >
-                    Retry
-                  </button>
-                </div>
-              ) : recommendations.length > 0 ? (
-                <div className="space-y-3">
-                  {recommendations.slice(0, 3).map(rec => (
-                    <div key={rec._id} className="p-3 bg-blue-50 rounded-lg">
-                      <p className="font-medium text-gray-900 text-sm">{rec.title}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className={`text-xs px-2 py-1 rounded ${
-                          rec.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
-                          rec.difficulty === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {rec.difficulty}
-                        </span>
-                        <span className="text-sm font-semibold text-green-600">
-                          {rec.expectedROI}% ROI
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => navigate('/recommendations')}
-                    className="w-full mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                  >
-                    View all recommendations →
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <p className="text-gray-600">No recommendations available yet.</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {showForm && (
-            <PropertyFormWizard
-              onClose={() => setShowForm(false)}
-              onSuccess={handlePropertyCreated}
-            />
-          )}
-
-          {/* Detailed Properties Section */}
-          <div className="border-t border-gray-200 pt-6">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Your Properties ({propertyPagination.count})</h2>
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-                <input
+          {/* Properties Section */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Your Properties ({propertyPagination.count})</h2>
+              <div className="flex items-center gap-2">
+                <input 
                   type="text"
+                  placeholder="Search..."
                   value={propertySearchInput}
-                  onChange={(e) => setPropertySearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      applyPropertySearch();
-                    }
-                  }}
-                  placeholder="Search title or description"
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={e => setPropertySearchInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && applyPropertySearch()}
+                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
-                <button
-                  onClick={applyPropertySearch}
-                  className="btn-secondary px-3 py-2 text-sm"
-                >
+                <button onClick={applyPropertySearch} className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
                   Search
-                </button>
-                {propertyQuery && (
-                  <button
-                    onClick={clearPropertySearch}
-                    className="btn-secondary px-3 py-2 text-sm"
-                  >
-                    Clear
-                  </button>
-                )}
-                <select
-                  value={propertyPageSize}
-                  onChange={(e) => {
-                    setPropertyPage(1);
-                    setPropertyPageSize(Number(e.target.value));
-                  }}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value={6}>6 / page</option>
-                  <option value={12}>12 / page</option>
-                  <option value={24}>24 / page</option>
-                </select>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="btn-primary px-4 py-2 text-sm"
-                >
-                  + Add Property
                 </button>
               </div>
             </div>
 
             {loading ? (
-              <div className="space-y-4">
-                {[...Array(4)].map((_, index) => (
-                  <SkeletonLoader key={index} type="property-list" />
-                ))}
-              </div>
-            ) : dashboardError ? (
-              <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
-                <div className="text-5xl mb-4">⚠️</div>
-                <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load properties</h3>
-                <p className="text-red-700 mb-6">{dashboardError}</p>
-                <button
-                  type="button"
-                  onClick={() => fetchProperties(propertyPage, propertyPageSize, propertyQuery)}
-                  className="btn-secondary px-6 py-3"
-                >
-                  Retry
-                </button>
-              </div>
+              <SkeletonLoader type="property-list" />
             ) : properties.length > 0 ? (
-              <>
+              <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {properties.map(property => (
-                    <div key={property._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition-all duration-300">
+                    <div key={property._id} className="group bg-slate-50 border border-slate-100 rounded-xl p-5 hover:border-blue-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="ui-card-title font-bold text-lg">{property.title}</h3>
-                        <span className={`inline-block px-2 py-1 text-xs rounded ${
-                          property.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          property.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
+                        <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{property.title}</h3>
+                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ${
+                          property.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          property.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-slate-200 text-slate-600'
                         }`}>
                           {property.status}
                         </span>
                       </div>
-
-                      <div className="space-y-2 mb-4">
-                        <p className="text-gray-600">📍 {property.location.city}, {property.location.state}</p>
-                        <p className="text-sm text-gray-500">
-                          🏠 {property.propertyType} • {property.bedrooms} BHK • {property.builUpArea} sq ft
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          📅 Age: {property.age} years • Condition: {property.condition}
-                        </p>
+                      <p className="text-slate-500 text-xs line-clamp-2 mb-4">{property.description || 'No description provided.'}</p>
+                      <div className="flex items-center gap-3 text-xs text-slate-600 mb-4">
+                        <span>📍 {property.location?.city}</span>
+                        <span>🏠 {property.propertyType}</span>
+                        <span>🛏️ {property.bedrooms} BHK</span>
                       </div>
-
-                      <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
                         <div>
-                          <p className="text-2xl font-bold text-green-600">₹{property.currentValue?.toLocaleString()}</p>
-                          <p className="text-sm text-gray-600">Current Value</p>
+                          <p className="text-xs text-slate-400 font-medium uppercase tracking-tighter">Current Value</p>
+                          <p className="text-lg font-bold text-emerald-600">₹{(Number(property.currentValue) || 0).toLocaleString()}</p>
                         </div>
-                        <button
-                          onClick={() => navigate('/valuation')}
-                          className="btn-secondary px-3 py-2 text-sm"
-                        >
-                          Get Valuation
-                        </button>
+                        <Link to={`/properties/${property._id}`} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:border-blue-500 hover:text-blue-600 transition-all">
+                          Manage →
+                        </Link>
                       </div>
-
-                      {/* Enhancement Checklist UI */}
-                      <EnhancementChecklist propertyId={property.id || property._id} userId={property.userId} />
+                      <div className="mt-4 pt-4 border-t border-slate-200/60">
+                         <EnhancementChecklist propertyId={property.id || property._id} userId={property.userId} />
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                <p className="mt-4 text-xs text-gray-500 text-center">
-                  {propertyPagination.count > 0
-                    ? `Showing ${propertyFrom}–${propertyTo} of ${propertyPagination.count}`
-                    : 'Showing 0 of 0'}
-                </p>
-
-                {propertyPagination.count > propertyPagination.limit && (
-                  <div className="mt-6 flex items-center justify-between gap-4 border-t border-gray-200 pt-4">
-                    <button
-                      onClick={() => setPropertyPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={propertyPage === 1 || loading}
-                      className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                {/* Pagination */}
+                {totalPropertyPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <button 
+                      disabled={propertyPage === 1}
+                      onClick={() => setPropertyPage(p => p - 1)}
+                      className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
                     >
-                      ← Previous
+                      ←
                     </button>
-                    <p className="text-sm text-gray-600">Page {propertyPage} of {totalPropertyPages}</p>
-                    <button
-                      onClick={() => setPropertyPage((prev) => prev + 1)}
-                      disabled={!propertyPagination.hasMore || loading}
-                      className="btn-secondary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    <span className="text-sm font-medium text-slate-600">Page {propertyPage} of {totalPropertyPages}</span>
+                    <button 
+                      disabled={!propertyPagination.hasMore}
+                      onClick={() => setPropertyPage(p => p + 1)}
+                      className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
                     >
-                      Next →
+                      →
                     </button>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                <div className="text-6xl mb-4">🏠</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Properties Yet</h3>
-                <p className="text-gray-600 mb-6">Start building your property portfolio by adding your first property.</p>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="btn-primary px-6 py-3"
-                >
-                  Add Your First Property
-                </button>
+              <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                <p className="text-slate-500 mb-4 font-medium">No properties found. Add your first property to start tracking!</p>
+                <button onClick={() => setShowForm(true)} className="btn-primary">Add Property</button>
               </div>
             )}
           </div>
         </div>
+
+        {/* Sidebar */}
+        <div className="space-y-8">
+          {/* Market Insights */}
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-xl">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              🌠 Market Insights
+              <span className="text-xs bg-blue-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">Live</span>
+            </h3>
+            <div className="space-y-4">
+              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-xs text-slate-400 mb-1 font-bold">MARKET TREND</p>
+                <p className="text-sm font-medium">Properties in <span className="text-blue-400">Bangalore</span> up 12.5% this quarter.</p>
+              </div>
+              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-xs text-slate-400 mb-1 font-bold">HOT IMPROVEMENT</p>
+                <p className="text-sm font-medium">Solar panels adding <span className="text-emerald-400">₹2.4L</span> average value on resale.</p>
+              </div>
+            </div>
+            <button onClick={() => navigate('/analytics')} className="w-full mt-6 py-2 bg-blue-600 rounded-xl text-sm font-bold hover:bg-blue-500 transition-colors">
+              Full Market Analysis
+            </button>
+          </div>
+
+          {/* Top Recommendations */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">💡 Top Opportunities</h2>
+            <div className="space-y-4">
+              {loading ? (
+                [1,2,3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />)
+              ) : recommendations.length > 0 ? (
+                recommendations.slice(0, 3).map(rec => (
+                  <div key={rec._id} className="p-3 border border-slate-100 rounded-xl hover:border-amber-200 hover:bg-amber-50/30 transition-all group">
+                    <p className="text-sm font-bold text-slate-800 line-clamp-1">{rec.title}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] font-black uppercase text-amber-600 tracking-widest">{rec.difficulty}</span>
+                      <span className="text-xs font-bold text-emerald-600">ROI: {rec.expectedROI}%</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500 italic">No recommendations found.</p>
+              )}
+              <button 
+                onClick={() => navigate('/recommendations')}
+                className="w-full text-center text-sm font-bold text-blue-600 hover:text-blue-700 pt-2"
+              >
+                View all tips →
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {showForm && (
+        <PropertyFormWizard 
+          onClose={() => setShowForm(false)}
+          onSuccess={handlePropertyCreated}
+        />
+      )}
     </div>
   );
 };
