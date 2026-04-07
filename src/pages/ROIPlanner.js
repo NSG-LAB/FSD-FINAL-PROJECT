@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { reportAPI, roiAPI } from '../services/api';
+import { 
+  Wallet, 
+  MapPin, 
+  Layers, 
+  Zap, 
+  ArrowUpRight, 
+  Clock, 
+  CheckCircle2, 
+  FileText,
+  Sparkles
+} from 'lucide-react';
 
 const ROIPlanner = () => {
   const [form, setForm] = useState({
@@ -20,7 +31,13 @@ const ROIPlanner = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!form.budget) {
+      toast.info('Please enter your investment budget');
+      return;
+    }
+    
     setLoading(true);
+    setPlan(null);
 
     try {
       const response = await roiAPI.generatePlan({
@@ -32,7 +49,7 @@ const ROIPlanner = () => {
       });
 
       setPlan(response.data.plan);
-      toast.success('ROI plan generated');
+      toast.success('Optimization plan generated');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to generate ROI plan');
     } finally {
@@ -41,9 +58,7 @@ const ROIPlanner = () => {
   };
 
   const exportPlan = async () => {
-    if (!plan) {
-      return;
-    }
+    if (!plan) return;
 
     try {
       const response = await reportAPI.exportValuationPdf({
@@ -54,8 +69,8 @@ const ROIPlanner = () => {
         },
         valuationResult: {
           currentValue: plan.totalCost,
-          improvedValue: plan.totalEstimatedGain,
-          confidence: 'medium',
+          improvedValue: (plan.totalCost || 0) + (plan.totalEstimatedGain || 0),
+          confidence: 'high',
           range: { min: plan.totalCost, max: plan.totalEstimatedGain },
         },
         roiPlan: plan,
@@ -65,60 +80,84 @@ const ROIPlanner = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'roi-plan-report.pdf';
+      link.download = `ROI_Strategy_${new Date().toLocaleDateString()}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error('Failed to export ROI report');
+      toast.error('Failed to export strategy report');
     }
   };
 
   return (
-    <div className="min-h-screen ui-page py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="ui-card rounded-xl p-8">
-          <h1 className="ui-card-title text-3xl font-bold mb-2">Improvement ROI Planner</h1>
-          <p className="text-gray-600 mb-6">Generate a budget-aware upgrade plan ranked by ROI and payback period.</p>
+    <div className="min-h-screen ui-page py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Page Header */}
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight mb-2">
+              ROI <span className="text-indigo-900 border-b-4 border-amber-400">Optimization</span> Planner
+            </h1>
+            <p className="text-slate-600 text-lg">
+              Strategize your property upgrades based on real market ROI data.
+            </p>
+          </div>
+          
+          {plan && (
+            <button
+              onClick={exportPlan}
+              className="btn-secondary flex items-center gap-2 px-6 py-3 rounded-xl font-bold shadow-sm"
+            >
+              <FileText size={20} />
+              Export Strategy
+            </button>
+          )}
+        </div>
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Budget (₹)</label>
+        {/* Filter Bar */}
+        <div className="ui-card glass-card p-6 rounded-2xl border border-slate-100 shadow-lg mb-10">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-end">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <Wallet size={14} className="text-amber-500" /> Budget (₹)
+              </label>
               <input
                 name="budget"
                 type="number"
-                min="0"
+                placeholder="Ex: 5,00,000"
                 value={form.budget}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. 500000"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold text-indigo-900 focus:ring-2 focus:ring-amber-400 outline-none transition-all"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <Layers size={14} className="text-amber-500" /> Prop Type
+              </label>
               <select
                 name="propertyType"
                 value={form.propertyType}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-700 focus:ring-2 focus:ring-amber-400 outline-none transition-all"
               >
                 <option value="apartment">Apartment</option>
                 <option value="house">House</option>
                 <option value="villa">Villa</option>
                 <option value="townhouse">Townhouse</option>
-                <option value="studio">Studio</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Condition</label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <Zap size={14} className="text-amber-500" /> Condition
+              </label>
               <select
                 name="propertyCondition"
                 value={form.propertyCondition}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-700 focus:ring-2 focus:ring-amber-400 outline-none transition-all"
               >
                 <option value="excellent">Excellent</option>
                 <option value="good">Good</option>
@@ -127,97 +166,127 @@ const ROIPlanner = () => {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">City (optional)</label>
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <MapPin size={14} className="text-amber-500" /> City
+              </label>
               <input
                 name="city"
+                placeholder="Ex: Mumbai"
                 value={form.city}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. Hyderabad"
+                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 font-semibold text-slate-700 focus:ring-2 focus:ring-amber-400 outline-none transition-all"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Top Recommendations</label>
-              <input
-                name="topN"
-                type="number"
-                min="1"
-                max="10"
-                value={form.topN}
-                onChange={handleChange}
-                className="w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary px-6 py-2.5 disabled:opacity-60"
-              >
-                {loading ? 'Generating...' : 'Generate ROI Plan'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="gold-gradient-bg w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all disabled:opacity-70"
+            >
+              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Sparkles size={20} />}
+              <span>{loading ? 'Optimizing...' : 'Plan ROI'}</span>
+            </button>
           </form>
-
-          {plan && (
-            <div className="mt-8 border-t border-slate-200 pt-6">
-              <h2 className="text-xl font-semibold mb-4">Plan Summary</h2>
-              <button
-                type="button"
-                onClick={exportPlan}
-                className="mb-4 btn-secondary px-4 py-2 font-medium"
-              >
-                Export PDF Report
-              </button>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="ui-card-item rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Total Cost</p>
-                  <p className="font-bold text-lg">₹{plan.totalCost?.toLocaleString()}</p>
-                </div>
-                <div className="ui-card-item rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Estimated Gain</p>
-                  <p className="ui-positive font-bold text-lg">₹{plan.totalEstimatedGain?.toLocaleString()}</p>
-                </div>
-                <div className="ui-card-item rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Blended ROI</p>
-                  <p className="ui-positive font-bold text-lg">{plan.blendedROI}%</p>
-                </div>
-                <div className="ui-card-item rounded-lg p-4">
-                  <p className="text-sm text-gray-600">Selected Items</p>
-                  <p className="font-bold text-lg">{plan.selectedCount}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {plan.recommendations.map((item) => (
-                  <div key={item.id} className="ui-card-item rounded-xl p-5">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                      <h3 className="ui-card-title font-semibold">{item.title}</h3>
-                      <span className="text-sm text-gray-600">{item.category} · {item.difficulty}</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-3 text-sm">
-                      <p><strong>Cost:</strong> ₹{item.estimatedCost?.toLocaleString()}</p>
-                      <p><strong>ROI:</strong> {item.roiPercentage}%</p>
-                      <p><strong>Gain:</strong> ₹{item.estimatedGain?.toLocaleString()}</p>
-                      <p><strong>Payback:</strong> {item.paybackMonths} mo</p>
-                      <p><strong>Duration:</strong> {item.durationMonths} mo</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {plan.recommendations.length === 0 && (
-                <p className="text-gray-500 mt-4">No recommendations fit this budget and filter combination.</p>
-              )}
-            </div>
-          )}
         </div>
+
+        {plan ? (
+          <div className="animate-in fade-in slide-in-from-bottom-6 duration-500">
+            {/* Summary Analytics */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Estimated Cost</p>
+                <p className="text-2xl font-black text-indigo-950">₹{plan.totalCost?.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+                <div className="absolute -right-2 -top-2 opacity-5">
+                   <ArrowUpRight size={80} />
+                </div>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Value Addition</p>
+                <p className="text-2xl font-black text-green-600">₹{plan.totalEstimatedGain?.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-indigo-900 p-6 rounded-3xl shadow-xl">
+                <p className="text-xs font-bold text-indigo-200 uppercase tracking-widest mb-1">Blended ROI</p>
+                <p className="text-3xl font-black text-amber-400">{plan.blendedROI}%</p>
+              </div>
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Upgrades Found</p>
+                <p className="text-2xl font-black text-indigo-950">{plan.selectedCount}</p>
+              </div>
+            </div>
+
+            {/* Recommendations Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {plan.recommendations.map((item, idx) => (
+                <div key={item.id} className="group ui-card hover:border-amber-200 transition-all duration-300 p-6 rounded-[2rem] flex flex-col md:flex-row gap-6 relative overflow-hidden">
+                   <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400 rounded-l-[2rem]"></div>
+                   
+                   <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-wider rounded-full border border-indigo-100">
+                          {item.category}
+                        </span>
+                        <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full border ${
+                          item.difficulty === 'easy' ? 'bg-green-50 text-green-700 border-green-100' : 
+                          item.difficulty === 'moderate' ? 'bg-amber-50 text-amber-700 border-amber-100' : 
+                          'bg-red-50 text-red-700 border-red-100'
+                        }`}>
+                          {item.difficulty}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-indigo-950 mb-4 group-hover:text-indigo-700 transition-colors">
+                        {item.title}
+                      </h3>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2 text-slate-600">
+                           <Clock size={16} className="text-slate-400" />
+                           <span className="text-sm font-medium">{item.durationMonths} Months</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600">
+                           <CheckCircle2 size={16} className="text-slate-400" />
+                           <span className="text-sm font-medium">{item.paybackMonths} Mo Payback</span>
+                        </div>
+                      </div>
+                   </div>
+
+                   <div className="md:w-48 flex flex-col justify-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Cost</p>
+                        <p className="text-lg font-bold text-slate-700">₹{item.estimatedCost?.toLocaleString('en-IN')}</p>
+                      </div>
+                      <div className="pt-2 border-t border-slate-200">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Value Gain</p>
+                        <p className="text-xl font-black text-green-600">+{item.roiPercentage}%</p>
+                      </div>
+                   </div>
+                </div>
+              ))}
+            </div>
+
+            {plan.recommendations.length === 0 && (
+              <div className="text-center py-20 bg-slate-50 rounded-[3rem] border border-dashed border-slate-200">
+                 <p className="text-xl font-bold text-slate-400">No matching upgrades found for this budget.</p>
+                 <p className="text-slate-400">Try increasing your budget or changing property filters.</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="py-24 text-center border-4 border-dashed border-slate-100 rounded-[3rem]">
+             <div className="bg-slate-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Wallet size={48} className="text-slate-200" />
+             </div>
+             <h3 className="text-2xl font-bold text-slate-300">Set your budget to begin</h3>
+             <p className="text-slate-400 max-w-sm mx-auto mt-2">
+                We'll analyze thousands of renovation data points to find the best ROI-positive improvements for your property.
+             </p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default ROIPlanner;
+
