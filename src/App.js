@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useSelector, useDispatch } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { HelmetProvider } from 'react-helmet-async';
 
 import Navigation from './components/Navigation';
 import Footer from './components/layout/Footer';
@@ -99,69 +100,71 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <div className="min-h-screen ui-page">
-          <Navigation />
-          <main className="pt-16">
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <SkeletonLoader type="title" className="mb-4" />
-                  <div className="space-y-3">
-                    <SkeletonLoader type="text" className="w-3/4 mx-auto" />
-                    <SkeletonLoader type="text" className="w-1/2 mx-auto" />
+      <HelmetProvider>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <div className="min-h-screen ui-page">
+            <Navigation />
+            <main className="pt-16">
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[60vh]">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <SkeletonLoader type="title" className="mb-4" />
+                    <div className="space-y-3">
+                      <SkeletonLoader type="text" className="w-3/4 mx-auto" />
+                      <SkeletonLoader type="text" className="w-1/2 mx-auto" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            }>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/recommendations" element={<Recommendations />} />
-                <Route
-                  path="/user/dashboard"
-                  element={(
-                    <UserRoute appLoading={appLoading}>
-                      <UserDashboard />
-                    </UserRoute>
-                  )}
-                />
-                <Route
-                  path="/admin/dashboard"
-                  element={(
-                    <AdminRoute appLoading={appLoading}>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  )}
-                />
-                <Route
-                  path="/monitoring"
-                  element={(
-                    <AdminRoute appLoading={appLoading}>
-                      <MonitoringDashboard />
-                    </AdminRoute>
-                  )}
-                />
-                <Route path="/valuation" element={<ValuationEstimator />} />
-                <Route path="/roi-planner" element={<ROIPlanner />} />
-                <Route
-                  path="/notifications"
-                  element={(
-                    <UserRoute appLoading={appLoading}>
-                      <Notifications />
-                    </UserRoute>
-                  )}
-                />
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-            </Suspense>
-          </main>
-          <Footer />
-          <ToastContainer position="bottom-right" autoClose={3000} />
-        </div>
-      </Router>
+              }>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/recommendations" element={<Recommendations />} />
+                  <Route
+                    path="/user/dashboard"
+                    element={(
+                      <UserRoute appLoading={appLoading}>
+                        <UserDashboard />
+                      </UserRoute>
+                    )}
+                  />
+                  <Route
+                    path="/admin/dashboard"
+                    element={(
+                      <AdminRoute appLoading={appLoading}>
+                        <AdminDashboard />
+                      </AdminRoute>
+                    )}
+                  />
+                  <Route
+                    path="/monitoring"
+                    element={(
+                      <AdminRoute appLoading={appLoading}>
+                        <MonitoringDashboard />
+                      </AdminRoute>
+                    )}
+                  />
+                  <Route path="/valuation" element={<ValuationEstimator />} />
+                  <Route path="/roi-planner" element={<ROIPlanner />} />
+                  <Route
+                    path="/notifications"
+                    element={(
+                      <UserRoute appLoading={appLoading}>
+                        <Notifications />
+                      </UserRoute>
+                    )}
+                  />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+              </Suspense>
+            </main>
+            <Footer />
+            <ToastContainer position="bottom-right" autoClose={3000} />
+          </div>
+        </Router>
+      </HelmetProvider>
     </ErrorBoundary>
   );
 }

@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import OnboardingWizard from '../components/OnboardingWizard';
 import { preloadCommonDashboards, preloadDashboardByRole } from '../utils/routePreload';
 import { ArrowRight, BarChart3, Lightbulb, TrendingUp, ShieldCheck, Zap, Home as HomeIcon, Layers, Palette } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -56,6 +57,10 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>GharMulya | Premium AI Property Valuation & ROI Platform</title>
+        <meta name="description" content="Unlock the true value of your Indian home with GharMulya. Data-driven property valuation and intelligent ROI renovation planning." />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative h-[90vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 z-0">

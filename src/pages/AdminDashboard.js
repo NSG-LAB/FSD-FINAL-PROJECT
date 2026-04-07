@@ -4,6 +4,22 @@ import { setRecommendations, setLoading, addRecommendation } from '../redux/reco
 import SkeletonLoader from '../components/SkeletonLoader';
 import { recommendationAPI, analyticsAPI, showApiErrorToast } from '../services/api';
 import { toast } from 'react-toastify';
+import { 
+  Users, 
+  Home, 
+  Zap, 
+  Bell, 
+  Activity, 
+  Shield, 
+  Database, 
+  Plus, 
+  X,
+  TrendingUp,
+  Settings,
+  ChevronRight,
+  PieChart,
+  HardDrive
+} from 'lucide-react';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -186,30 +202,27 @@ const AdminDashboard = () => {
       return renderAnalyticsState('No overview data available yet.');
     }
 
-    const { users, properties, recommendations, notifications, distributions } = analyticsData.overview;
+    const { users, properties, recommendations, notifications } = analyticsData.overview;
+
+    const stats = [
+      { label: 'Total Users', value: users.total, change: `+${users.new} this month`, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+      { label: 'Total Properties', value: properties.total, change: `+${properties.new} this month`, icon: Home, color: 'text-green-600', bg: 'bg-green-50' },
+      { label: 'Recommendations', value: recommendations.total, change: `${recommendations.active} active`, icon: Zap, color: 'text-amber-600', bg: 'bg-amber-50' },
+      { label: 'Notifications', value: notifications.total, change: `${notifications.unread} unread`, icon: Bell, color: 'text-rose-600', bg: 'bg-rose-50' },
+    ];
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="ui-card-item rounded-xl p-6 text-center">
-          <h3 className="text-2xl font-bold text-blue-600">{users.total}</h3>
-          <p className="text-gray-600">Total Users</p>
-          <p className="text-sm text-green-600">+{users.new} new this month</p>
-        </div>
-        <div className="ui-card-item rounded-xl p-6 text-center">
-          <h3 className="text-2xl font-bold text-green-600">{properties.total}</h3>
-          <p className="text-gray-600">Total Properties</p>
-          <p className="text-sm text-blue-600">+{properties.new} new this month</p>
-        </div>
-        <div className="ui-card-item rounded-xl p-6 text-center">
-          <h3 className="text-2xl font-bold text-purple-600">{recommendations.total}</h3>
-          <p className="text-gray-600">Recommendations</p>
-          <p className="text-sm text-green-600">{recommendations.active} active</p>
-        </div>
-        <div className="ui-card-item rounded-xl p-6 text-center">
-          <h3 className="text-2xl font-bold text-orange-600">{notifications.total}</h3>
-          <p className="text-gray-600">Notifications</p>
-          <p className="text-sm text-red-600">{notifications.unread} unread</p>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        {stats.map((stat, idx) => (
+          <div key={idx} className="glass p-6 rounded-3xl border border-white/50 shadow-xl hover:shadow-2xl transition-all duration-500 group">
+            <div className={`w-14 h-14 ${stat.bg} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500`}>
+              <stat.icon className={stat.color} size={28} />
+            </div>
+            <h3 className="text-3xl font-black text-indigo-950 mb-1">{stat.value}</h3>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">{stat.label}</p>
+            <p className="text-xs font-bold text-slate-500">{stat.change}</p>
+          </div>
+        ))}
       </div>
     );
   };
@@ -323,51 +336,67 @@ const AdminDashboard = () => {
     const { system, database, cache } = analyticsData.performance;
 
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="ui-card-item rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4">System Information</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Uptime:</span>
-                <span>{Math.floor(system.uptime / 3600)}h {Math.floor((system.uptime % 3600) / 60)}m</span>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="glass p-8 rounded-[2.5rem] border border-white/50 shadow-xl group">
+            <div className="flex items-center gap-4 mb-8">
+               <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <HardDrive size={24} />
+               </div>
+               <h3 className="text-xl font-black text-indigo-950">System Core</h3>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Uptime</span>
+                <span className="text-sm font-bold text-indigo-950">{Math.floor(system.uptime / 3600)}h {Math.floor((system.uptime % 3600) / 60)}m</span>
               </div>
-              <div className="flex justify-between">
-                <span>Memory Usage:</span>
-                <span>{(system.memoryUsage.heapUsed / 1024 / 1024).toFixed(1)} MB</span>
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Memory</span>
+                <span className="text-sm font-bold text-indigo-950">{(system.memoryUsage.heapUsed / 1024 / 1024).toFixed(1)} MB</span>
               </div>
-              <div className="flex justify-between">
-                <span>Node Version:</span>
-                <span>{system.nodeVersion}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Platform:</span>
-                <span>{system.platform}</span>
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Engine</span>
+                <span className="text-sm font-bold text-indigo-950">Node {system.nodeVersion}</span>
               </div>
             </div>
           </div>
-          <div className="ui-card-item rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4">Database Status</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Status:</span>
-                <span className={`font-semibold ${database.status === 'connected' ? 'text-green-600' : 'text-red-600'}`}>
-                  {database.status}
+
+          <div className="glass p-8 rounded-[2.5rem] border border-white/50 shadow-xl group">
+            <div className="flex items-center gap-4 mb-8">
+               <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <Database size={24} />
+               </div>
+               <h3 className="text-xl font-black text-indigo-950">Relational Logic</h3>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Connectivity</span>
+                <span className={`text-sm font-black px-3 py-1 rounded-full uppercase tracking-tighter ${database.status === 'connected' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                  {database.status?.toUpperCase()}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span>Dialect:</span>
-                <span>{database.dialect}</span>
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Dialect</span>
+                <span className="text-sm font-bold text-indigo-950 uppercase">{database.dialect} Engine</span>
               </div>
             </div>
           </div>
-          <div className="ui-card-item rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-4">Cache Status</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Redis Status:</span>
-                <span className={`font-semibold ${cache.status === 'connected' ? 'text-green-600' : 'text-red-600'}`}>
-                  {cache.status}
+
+          <div className="glass p-8 rounded-[2.5rem] border border-white/50 shadow-xl group">
+            <div className="flex items-center gap-4 mb-8">
+               <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <Zap size={24} />
+               </div>
+               <h3 className="text-xl font-black text-indigo-950">Memory Cache</h3>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex justify-between items-center group/item pb-4 border-b border-slate-50">
+                <span className="text-xs font-black text-slate-400 uppercase tracking-widest px-2 py-1 bg-slate-50 rounded">Cluster Status</span>
+                <span className={`text-sm font-black px-3 py-1 rounded-full uppercase tracking-tighter ${cache.status === 'connected' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                  {cache.status?.toUpperCase()}
                 </span>
               </div>
             </div>
@@ -378,34 +407,41 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen ui-page py-8">
+    <div className="min-h-screen ui-page py-12">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="ui-card rounded-xl p-8">
-          <h1 className="ui-card-title text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600 mb-6">Monitor system analytics and manage recommendations.</p>
-
-          {/* Tab Navigation */}
-          <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 pb-4">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'activity', label: 'User Activity' },
-              { id: 'properties', label: 'Properties' },
-              { id: 'performance', label: 'Performance' },
-              { id: 'recommendations', label: 'Recommendations' }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-black uppercase tracking-widest mb-4 border border-indigo-100 shadow-sm">
+            <Shield size={14} /> Administrative Control
           </div>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-indigo-950 mb-2">
+            System <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Command Center</span>
+          </h1>
+          <p className="text-slate-500 font-medium text-lg">Monitor platform performance and curate intelligence assets.</p>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="flex flex-wrap gap-3 mb-10 overflow-x-auto pb-2 scrollbar-none">
+          {[
+            { id: 'overview', label: 'Overview', icon: PieChart },
+            { id: 'activity', label: 'User Activity', icon: Activity },
+            { id: 'properties', label: 'Properties', icon: Home },
+            { id: 'performance', label: 'Performance', icon: Settings },
+            { id: 'recommendations', label: 'Recommendations', icon: Zap }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-sm transition-all duration-300 whitespace-nowrap shadow-sm border ${
+                activeTab === tab.id
+                  ? 'bg-indigo-950 text-white border-indigo-950 translate-y-[-2px] shadow-lg shadow-indigo-200'
+                  : 'bg-white text-slate-500 border-slate-100 hover:border-indigo-200 hover:text-indigo-600'
+              }`}
+            >
+              <tab.icon size={18} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
           {/* Tab Content */}
           {activeTab === 'overview' && renderOverviewTab()}
@@ -415,185 +451,194 @@ const AdminDashboard = () => {
 
           {/* Recommendations Management */}
           {activeTab === 'recommendations' && (
-            <>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="mb-6 btn-primary px-6 py-2.5"
-              >
-                {showForm ? 'Cancel' : 'Create Recommendation'}
-              </button>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-black text-indigo-950">Intelligent Recommendations</h2>
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className={`btn-gold px-8 py-3 rounded-2xl font-black transition-all flex items-center gap-2 ${showForm ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-none' : ''}`}
+                >
+                  {showForm ? <><X size={20} /> Cancel Access</> : <><Plus size={20} /> New Intelligence</>}
+                </button>
+              </div>
 
               {showForm && (
-                <form onSubmit={handleSubmit} className="mb-8 border-t border-slate-200 pt-6">
-                  <h2 className="text-2xl font-semibold mb-4">Create New Recommendation</h2>
+                <div className="glass p-8 rounded-[2.5rem] border border-white/50 shadow-2xl mb-12 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Asset Title</label>
+                        <input
+                          type="text"
+                          name="title"
+                          value={formData.title}
+                          onChange={handleChange}
+                          required
+                          placeholder="e.g. Luxury Kitchen Transformation"
+                          className="premium-input w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Category Domain</label>
+                        <select
+                          name="category"
+                          value={formData.category}
+                          onChange={handleChange}
+                          className="premium-input w-full"
+                        >
+                          <option value="kitchen-bathroom">Kitchen & Bathroom</option>
+                          <option value="flooring">Flooring Systems</option>
+                          <option value="wall-paint">Surface Finishing</option>
+                          <option value="lighting-fixtures">Ambient Lighting</option>
+                          <option value="garden-outdoor">Exterior Landscaping</option>
+                          <option value="safety-security">Logic Security</option>
+                          <option value="energy-efficiency">Ecological Footprint</option>
+                          <option value="interior-design">Spatial Design</option>
+                          <option value="electrical-plumbing">Infrastructure</option>
+                        </select>
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                      <input
-                        type="text"
-                        name="title"
-                        value={formData.title}
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Detailed Intelligence</label>
+                      <textarea
+                        name="description"
+                        value={formData.description}
                         onChange={handleChange}
+                        rows="3"
                         required
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Provide high-level strategic reasoning..."
+                        className="premium-input w-full"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                      <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option>kitchen-bathroom</option>
-                        <option>flooring</option>
-                        <option>wall-paint</option>
-                        <option>lighting-fixtures</option>
-                        <option>garden-outdoor</option>
-                        <option>safety-security</option>
-                        <option>energy-efficiency</option>
-                        <option>interior-design</option>
-                        <option>electrical-plumbing</option>
-                      </select>
-                    </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      rows="4"
-                      required
-                      className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Capital Entry (Min ₹)</label>
+                        <input
+                          type="number"
+                          name="costMin"
+                          placeholder="50,000"
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            estimatedCost: { ...prev.estimatedCost, min: Number(e.target.value) }
+                          }))}
+                          className="premium-input w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Capital Entry (Max ₹)</label>
+                        <input
+                          type="number"
+                          name="costMax"
+                          placeholder="2,00,000"
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            estimatedCost: { ...prev.estimatedCost, max: Number(e.target.value) }
+                          }))}
+                          className="premium-input w-full"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Projected ROI (%)</label>
+                        <input
+                          type="number"
+                          name="expectedROI"
+                          value={formData.expectedROI}
+                          onChange={handleChange}
+                          placeholder="15"
+                          className="premium-input w-full"
+                        />
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Min Cost (₹)</label>
-                      <input
-                        type="number"
-                        name="costMin"
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          estimatedCost: { ...prev.estimatedCost, min: e.target.value }
-                        }))}
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Implementation Difficulty</label>
+                        <select
+                          name="difficulty"
+                          value={formData.difficulty}
+                          onChange={handleChange}
+                          className="premium-input w-full"
+                        >
+                          <option value="easy">Optimized (Easy)</option>
+                          <option value="moderate">Standard (Moderate)</option>
+                          <option value="difficult">Complex (Difficult)</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-slate-400 uppercase tracking-widest block ml-1">Estimated Window</label>
+                        <input
+                          type="text"
+                          name="timeframe"
+                          value={formData.timeframe}
+                          onChange={handleChange}
+                          placeholder="e.g. 2-3 Strategic Weeks"
+                          className="premium-input w-full"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Cost (₹)</label>
-                      <input
-                        type="number"
-                        name="costMax"
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          estimatedCost: { ...prev.estimatedCost, max: e.target.value }
-                        }))}
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expected ROI (%)</label>
-                      <input
-                        type="number"
-                        name="expectedROI"
-                        value={formData.expectedROI}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
-                      <select
-                        name="difficulty"
-                        value={formData.difficulty}
-                        onChange={handleChange}
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option>easy</option>
-                        <option>moderate</option>
-                        <option>difficult</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Timeframe</label>
-                      <input
-                        type="text"
-                        name="timeframe"
-                        value={formData.timeframe}
-                        onChange={handleChange}
-                        placeholder="e.g., 2-3 weeks"
-                        className="block w-full px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full btn-success py-2.5"
-                  >
-                    Create Recommendation
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      className="btn-gold w-full py-4 rounded-2xl font-black text-lg shadow-xl hover:shadow-gold/20 transition-all flex items-center justify-center gap-3"
+                    >
+                      <span>Inject into Intelligence Engine</span>
+                      <ChevronRight size={22} />
+                    </button>
+                  </form>
+                </div>
               )}
 
-              <div className="border-t border-slate-200 pt-6">
-                <h2 className="text-2xl font-semibold mb-4">Recommendations ({recommendations.length})</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {recommendationsLoading ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[...Array(4)].map((_, index) => (
-                      <SkeletonLoader key={index} type="card" className="h-56" />
-                    ))}
-                  </div>
-                ) : recommendationsError ? (
-                  <div className="text-center py-12 bg-red-50 rounded-xl border border-red-200">
-                    <div className="text-4xl mb-3">⚠️</div>
-                    <h3 className="text-xl font-semibold text-red-800 mb-2">Unable to load recommendations</h3>
-                    <p className="text-red-700 mb-5">{recommendationsError}</p>
-                    <button
-                      type="button"
-                      onClick={fetchRecommendations}
-                      className="btn-secondary px-5 py-2.5"
-                    >
-                      Retry
-                    </button>
-                  </div>
+                  [...Array(4)].map((_, index) => (
+                    <SkeletonLoader key={index} type="card" className="h-64 rounded-3xl" />
+                  ))
                 ) : recommendations.length === 0 ? (
-                  <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                    <p className="text-gray-600">No recommendations available yet. Create one to get started.</p>
+                  <div className="col-span-full py-20 text-center glass rounded-[2.5rem] border-2 border-dashed border-slate-200">
+                    <p className="text-slate-400 font-bold">No strategic assets available. Initiate global intelligence create.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {recommendations.map(rec => (
-                      <div key={rec._id} className="ui-card-item rounded-xl p-5 hover:shadow-lg transition">
-                        <h3 className="ui-card-title font-bold text-lg mb-2">{rec.title}</h3>
-                        <p className="text-gray-600 mb-2 text-sm">{rec.description ? `${rec.description.substring(0, 100)}...` : 'No description available.'}</p>
-                        <div className="flex justify-between mb-2">
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{rec.category}</span>
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{rec.difficulty}</span>
+                  recommendations.map(rec => (
+                    <div key={rec._id} className="glass p-6 rounded-[2.5rem] border border-slate-50 shadow-lg hover:shadow-2xl transition-all duration-500 group flex flex-col h-full">
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
+                          <Zap size={20} className="text-indigo-600 group-hover:text-white" />
                         </div>
-                        <p className="text-sm text-gray-500">ROI: <strong className="ui-positive">{rec.expectedROI}%</strong></p>
-                        {rec.estimatedCost && (
-                          <p className="text-sm text-gray-500">Cost: ₹{rec.estimatedCost.min?.toLocaleString()} - ₹{rec.estimatedCost.max?.toLocaleString()}</p>
-                        )}
+                        <div className="flex flex-col items-end gap-2">
+                           <span className="text-[10px] font-black bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full uppercase tracking-wider">{rec.category}</span>
+                           <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                             rec.difficulty === 'easy' ? 'bg-emerald-50 text-emerald-700' :
+                             rec.difficulty === 'moderate' ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
+                           }`}>{rec.difficulty}</span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                      
+                      <h3 className="text-xl font-black text-indigo-950 mb-3 group-hover:text-indigo-600 transition-colors">{rec.title}</h3>
+                      <p className="text-slate-500 text-sm font-medium mb-6 line-clamp-3 leading-relaxed flex-grow">
+                        {rec.description}
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-4 mt-auto pt-6 border-t border-slate-50">
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected ROI</p>
+                          <p className="text-lg font-black text-emerald-600">{rec.expectedROI}%</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Average Cost</p>
+                          <p className="text-lg font-black text-indigo-950">₹{(rec.estimatedCost.min + rec.estimatedCost.max) / 2000}K</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
-    </div>
   );
 };
 

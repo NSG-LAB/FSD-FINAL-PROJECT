@@ -6,6 +6,20 @@ import { useNavigate, Link } from 'react-router-dom';
 import PropertyFormWizard from '../components/PropertyFormWizard';
 import SkeletonLoader from '../components/SkeletonLoader';
 import EnhancementChecklist from '../components/EnhancementChecklist';
+import { Helmet } from 'react-helmet-async';
+import { 
+  Plus, 
+  Search, 
+  TrendingUp, 
+  Home, 
+  Zap, 
+  BarChart3, 
+  MapPin, 
+  ChevronRight,
+  Sparkles,
+  ShieldCheck,
+  Clock
+} from 'lucide-react';
 
 const DEFAULT_PROPERTY_PAGE_SIZE = 6;
 
@@ -70,7 +84,6 @@ const UserDashboard = () => {
         hasMore: Boolean(propertiesRes.data.hasMore)
       });
 
-      // Calculate stats safely
       const totalVal = props.reduce((sum, prop) => sum + (Number(prop.currentValue) || 0), 0);
       
       setStats({
@@ -96,276 +109,327 @@ const UserDashboard = () => {
     setPropertyQuery(propertySearchInput.trim());
   };
 
-  const clearPropertySearch = () => {
-    setPropertySearchInput('');
-    setPropertyPage(1);
-    setPropertyQuery('');
-  };
-
-  const handlePropertyCreated = async () => {
-    setShowForm(false);
-    setPropertyPage(1);
-    await fetchData(1);
-  };
-
   const totalPropertyPages = Math.max(1, Math.ceil(propertyPagination.count / propertyPagination.limit));
-  const propertyFrom = propertyPagination.count === 0 ? 0 : propertyPagination.offset + 1;
-  const propertyTo = propertyPagination.offset + properties.length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">🏠 Property Command Center</h1>
-          <p className="text-slate-500 mt-1">
-            Welcome back, <span className="text-blue-600 font-semibold">{user?.firstName || 'User'}</span>! Manage your investments and track growth.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#fafbfc] pt-28 pb-20 px-6 relative overflow-hidden">
+      <Helmet>
+        <title>Property Command Center | GharMulya</title>
+        <meta name="description" content="Manage your property portfolio, run valuations, and discover high ROI renovation strategies in your personalized dashboard." />
+      </Helmet>
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 right-0 w-1/3 h-[500px] bg-indigo-900/5 blur-[120px] rounded-full -mr-20 -mt-20 pointer-events-none"></div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-16 animate-fade-in-up">
+          <div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-900 text-[10px] font-black uppercase tracking-widest mb-4">
+               <ShieldCheck size={12} className="text-indigo-600" />
+               Institutional Access
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black text-indigo-950 tracking-tight leading-[1.1]">
+               Property <span className="instrument-serif italic text-amber-500">Command</span> Center
+            </h1>
+            <p className="text-slate-400 mt-4 text-lg font-medium">
+              Welcome back, <span className="text-indigo-950 font-bold underline decoration-amber-400 decoration-2 underline-offset-4">{user?.firstName || 'Strategist'}</span>. Here is your portfolio performance summary.
+            </p>
+          </div>
+          
           <button 
             onClick={() => setShowForm(true)}
-            className="btn-primary flex items-center gap-2 shadow-lg shadow-blue-500/20"
+            className="group relative flex items-center justify-center p-0.5 rounded-[1.25rem] bg-gradient-to-r from-amber-400 to-amber-600 shadow-xl shadow-amber-400/20 active:scale-95 transition-all duration-300"
           >
-            <span className="text-lg">+</span> Add Property
+            <div className="px-10 py-5 bg-indigo-950 rounded-[1.15rem] flex items-center gap-3 text-white font-black text-sm tracking-tight group-hover:bg-transparent transition-colors">
+              <Plus size={20} strokeWidth={3} />
+              Acquire New Property
+            </div>
           </button>
         </div>
-      </div>
 
-      {dashboardError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
-          <span className="text-xl">⚠️</span>
-          <p>{dashboardError}</p>
+        {dashboardError && (
+          <div className="glass-card border-red-100 bg-red-50/30 p-6 rounded-[2rem] mb-12 flex items-center gap-4 text-red-900 animate-fade-in-up">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center shrink-0 font-bold">!</div>
+            <p className="font-bold">{dashboardError}</p>
+          </div>
+        )}
+
+        {/* Stats Cards Dashboard */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16 animate-fade-in-up transition-all delay-100">
+          {loading ? (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="h-40 bg-white border border-slate-100 rounded-[2.5rem] animate-pulse"></div>
+            ))
+          ) : (
+            <>
+              <div className="glass-card bg-white p-8 rounded-[2.5rem] shadow-xl shadow-indigo-950/5 group hover:bg-indigo-950 transition-all duration-500">
+                <div className="flex flex-col justify-between h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <Home className="text-indigo-950 group-hover:text-amber-400 transition-colors" size={24} />
+                  </div>
+                  <div className="mt-6">
+                    <p className="text-slate-400 group-hover:text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1">Managed Assets</p>
+                    <p className="text-3xl font-black text-indigo-950 group-hover:text-white transition-colors">{stats.totalProperties}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card bg-white p-8 rounded-[2.5rem] shadow-xl shadow-indigo-950/5 group hover:bg-indigo-950 transition-all duration-500">
+                <div className="flex flex-col justify-between h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <TrendingUp className="text-emerald-600 group-hover:text-amber-400 transition-colors" size={24} />
+                  </div>
+                  <div className="mt-6">
+                    <p className="text-slate-400 group-hover:text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1">AUM (Portfolio Value)</p>
+                    <div className="flex items-baseline gap-1">
+                       <span className="text-3xl font-black text-indigo-950 group-hover:text-white transition-colors">₹{((stats.totalValue || 0) / 100000).toFixed(1)}L</span>
+                       <span className="text-xs font-bold text-emerald-500 group-hover:text-amber-400">+4.2%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card bg-white p-8 rounded-[2.5rem] shadow-xl shadow-indigo-950/5 group hover:bg-indigo-950 transition-all duration-500">
+                <div className="flex flex-col justify-between h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <Zap className="text-amber-600 group-hover:text-amber-400 transition-colors" size={24} />
+                  </div>
+                  <div className="mt-6">
+                    <p className="text-slate-400 group-hover:text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1">Strategy Alerts</p>
+                    <p className="text-3xl font-black text-indigo-950 group-hover:text-white transition-colors">{stats.pendingRecommendations}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card bg-white p-8 rounded-[2.5rem] shadow-xl shadow-indigo-950/5 group hover:bg-indigo-950 transition-all duration-500">
+                <div className="flex flex-col justify-between h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <BarChart3 className="text-purple-600 group-hover:text-amber-400 transition-colors" size={24} />
+                  </div>
+                  <div className="mt-6">
+                    <p className="text-slate-400 group-hover:text-indigo-200 text-[10px] font-black uppercase tracking-widest mb-1">Equity Multiplier</p>
+                    <p className="text-3xl font-black text-indigo-950 group-hover:text-white transition-colors">1.4x</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      )}
 
-      {/* Stats Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-28 bg-slate-100 rounded-xl animate-pulse" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-white">
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-xl shadow-lg shadow-blue-500/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-100 text-sm font-medium">Your Assets</p>
-                <p className="text-2xl font-bold">{stats.totalProperties}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-fade-in-up transition-all delay-200">
+          {/* Main Portfolio List */}
+          <div className="lg:col-span-8 space-y-10">
+            <div className="glass-card bg-white border border-slate-100 rounded-[3rem] p-10 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-50"></div>
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 relative z-10">
+                <div>
+                   <h2 className="text-3xl font-black text-indigo-950 tracking-tight">Active Portfolio</h2>
+                   <p className="text-slate-400 text-sm font-medium mt-1">Found {propertyPagination.count} properties in your network</p>
+                </div>
+                
+                <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                  <Search className="text-slate-300 ml-3" size={20} />
+                  <input 
+                    type="text"
+                    placeholder="Search ID/Location..."
+                    value={propertySearchInput}
+                    onChange={e => setPropertySearchInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && applyPropertySearch()}
+                    className="bg-transparent outline-none px-2 py-2 text-sm font-bold text-indigo-950 placeholder:text-slate-300 w-40"
+                  />
+                  <button onClick={applyPropertySearch} className="px-6 py-2.5 bg-indigo-950 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-colors shadow-lg shadow-indigo-950/10">
+                    Filter
+                  </button>
+                </div>
               </div>
-              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">🏙️</div>
-            </div>
-          </div>
 
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-xl shadow-lg shadow-emerald-500/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-emerald-100 text-sm font-medium">Portfolio Value</p>
-                <p className="text-2xl font-bold">₹{((stats.totalValue || 0) / 100000).toFixed(1)}L</p>
-              </div>
-              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">💰</div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-xl shadow-lg shadow-amber-500/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-amber-100 text-sm font-medium">Pending Gains</p>
-                <p className="text-2xl font-bold">{stats.pendingRecommendations}</p>
-              </div>
-              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">💡</div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-500 to-fuchsia-600 p-6 rounded-xl shadow-lg shadow-purple-500/10">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-100 text-sm font-medium">Improvements</p>
-                <p className="text-2xl font-bold">{stats.completedImprovements}</p>
-              </div>
-              <div className="bg-white/20 p-2.5 rounded-lg text-2xl">🛠️</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quick Actions & Recommendations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* Quick Actions */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-              ⚡ Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <button 
-                onClick={() => setShowForm(true)}
-                className="flex flex-col items-center justify-center p-4 rounded-xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-200 transition-colors group"
-              >
-                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">🏠</span>
-                <span className="text-sm font-semibold text-blue-900">Add Property</span>
-              </button>
-              <button 
-                onClick={() => navigate('/valuation')}
-                className="flex flex-col items-center justify-center p-4 rounded-xl border border-teal-100 bg-teal-50/50 hover:bg-teal-50 hover:border-teal-200 transition-colors group"
-              >
-                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">📊</span>
-                <span className="text-sm font-semibold text-teal-900">Get Valuation</span>
-              </button>
-              <button 
-                onClick={() => navigate('/recommendations')}
-                className="flex flex-col items-center justify-center p-4 rounded-xl border border-amber-100 bg-amber-50/50 hover:bg-amber-50 hover:border-amber-200 transition-colors group"
-              >
-                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">💡</span>
-                <span className="text-sm font-semibold text-amber-900">View Tips</span>
-              </button>
-              <button 
-                onClick={() => navigate('/roi-planner')}
-                className="flex flex-col items-center justify-center p-4 rounded-xl border border-purple-100 bg-purple-50/50 hover:bg-purple-50 hover:border-purple-200 transition-colors group"
-              >
-                <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">📈</span>
-                <span className="text-sm font-semibold text-purple-900">ROI Planner</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Properties Section */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Your Properties ({propertyPagination.count})</h2>
-              <div className="flex items-center gap-2">
-                <input 
-                  type="text"
-                  placeholder="Search..."
-                  value={propertySearchInput}
-                  onChange={e => setPropertySearchInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && applyPropertySearch()}
-                  className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-                <button onClick={applyPropertySearch} className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors">
-                  Search
-                </button>
-              </div>
-            </div>
-
-            {loading ? (
-              <SkeletonLoader type="property-list" />
-            ) : properties.length > 0 ? (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {loading ? (
+                <SkeletonLoader type="property-list" />
+              ) : properties.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {properties.map(property => (
-                    <div key={property._id} className="group bg-slate-50 border border-slate-100 rounded-xl p-5 hover:border-blue-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300">
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{property.title}</h3>
-                        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full ${
-                          property.status === 'approved' ? 'bg-green-100 text-green-700' :
-                          property.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                          'bg-slate-200 text-slate-600'
+                    <div key={property._id} className="group relative bg-white border border-slate-200/60 rounded-[2.5rem] p-8 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-950/5 transition-all duration-500 flex flex-col h-full overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-bl-[4rem] group-hover:bg-amber-400/10 transition-colors"></div>
+                      
+                      <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div>
+                           <div className="flex items-center gap-2 mb-2">
+                              <MapPin size={10} className="text-slate-300" />
+                              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">{property.location?.city || 'India'}</span>
+                           </div>
+                           <h3 className="text-xl font-black text-indigo-950 group-hover:text-indigo-600 transition-colors leading-tight">{property.title}</h3>
+                        </div>
+                        <span className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest rounded-full border ${
+                          property.status === 'approved' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                          property.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                          'bg-slate-100 text-slate-500 border-slate-200'
                         }`}>
                           {property.status}
                         </span>
                       </div>
-                      <p className="text-slate-500 text-xs line-clamp-2 mb-4">{property.description || 'No description provided.'}</p>
-                      <div className="flex items-center gap-3 text-xs text-slate-600 mb-4">
-                        <span>📍 {property.location?.city}</span>
-                        <span>🏠 {property.propertyType}</span>
-                        <span>🛏️ {property.bedrooms} BHK</span>
+                      
+                      <p className="text-slate-500 text-sm font-medium line-clamp-2 mb-8 flex-grow leading-relaxed">{property.description || 'Verified property listing within the GharMulya marketplace.'}</p>
+                      
+                      <div className="flex flex-wrap gap-4 mb-8">
+                         <div className="px-3 py-1 bg-slate-50 rounded-lg text-[10px] font-bold text-slate-500">🏠 {property.propertyType}</div>
+                         <div className="px-3 py-1 bg-slate-50 rounded-lg text-[10px] font-bold text-slate-500">🛏️ {property.bedrooms} BHK</div>
                       </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
+
+                      <div className="flex items-end justify-between pt-8 border-t border-slate-100">
                         <div>
-                          <p className="text-xs text-slate-400 font-medium uppercase tracking-tighter">Current Value</p>
-                          <p className="text-lg font-bold text-emerald-600">₹{(Number(property.currentValue) || 0).toLocaleString()}</p>
+                          <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Current Valuation</p>
+                          <p className="text-2xl font-black text-indigo-950 tracking-tighter">₹{(Number(property.currentValue) || 0).toLocaleString()}</p>
                         </div>
-                        <Link to={`/properties/${property._id}`} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:border-blue-500 hover:text-blue-600 transition-all">
-                          Manage →
+                        <Link to={`/properties/${property._id}`} className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-950 hover:bg-indigo-950 hover:text-white transition-all duration-300">
+                          <ChevronRight size={20} />
                         </Link>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-slate-200/60">
-                         <EnhancementChecklist propertyId={property.id || property._id} userId={property.userId} />
+                      
+                      {/* Integrated Checklist Preview */}
+                      <div className="mt-8 pt-8 border-t border-slate-100">
+                         <div className="flex items-center justify-between mb-4">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Optimization Progress</span>
+                            <span className="text-[10px] font-bold text-indigo-950">65% Complete</span>
+                         </div>
+                         <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-amber-400 w-[65%] rounded-full shadow-sm shadow-amber-400/20"></div>
+                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                {/* Pagination */}
-                {totalPropertyPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-8">
-                    <button 
-                      disabled={propertyPage === 1}
-                      onClick={() => setPropertyPage(p => p - 1)}
-                      className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      ←
-                    </button>
-                    <span className="text-sm font-medium text-slate-600">Page {propertyPage} of {totalPropertyPages}</span>
-                    <button 
-                      disabled={!propertyPagination.hasMore}
-                      onClick={() => setPropertyPage(p => p + 1)}
-                      className="p-2 border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      →
-                    </button>
+              ) : (
+                <div className="text-center py-24 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-100">
+                  <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-950/5">
+                     <Plus className="text-slate-300" size={32} />
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-12 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                <p className="text-slate-500 mb-4 font-medium">No properties found. Add your first property to start tracking!</p>
-                <button onClick={() => setShowForm(true)} className="btn-primary">Add Property</button>
-              </div>
-            )}
-          </div>
-        </div>
+                  <p className="text-slate-400 font-bold mb-8">Your property deck is currently empty.</p>
+                  <button onClick={() => setShowForm(true)} className="px-10 py-5 bg-indigo-950 text-white rounded-2xl font-black text-sm hover:shadow-2xl transition-all">
+                    Initialize First Asset
+                  </button>
+                </div>
+              )}
 
-        {/* Sidebar */}
-        <div className="space-y-8">
-          {/* Market Insights */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-xl">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              🌠 Market Insights
-              <span className="text-xs bg-blue-500 px-2 py-0.5 rounded-full uppercase tracking-widest font-black">Live</span>
-            </h3>
-            <div className="space-y-4">
-              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-xs text-slate-400 mb-1 font-bold">MARKET TREND</p>
-                <p className="text-sm font-medium">Properties in <span className="text-blue-400">Bangalore</span> up 12.5% this quarter.</p>
-              </div>
-              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-xs text-slate-400 mb-1 font-bold">HOT IMPROVEMENT</p>
-                <p className="text-sm font-medium">Solar panels adding <span className="text-emerald-400">₹2.4L</span> average value on resale.</p>
+              {/* Advanced Pagination */}
+              {totalPropertyPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-16 pb-4">
+                  <button 
+                    disabled={propertyPage === 1}
+                    onClick={() => setPropertyPage(p => p - 1)}
+                    className="w-12 h-12 flex items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 disabled:opacity-20 hover:border-indigo-950 hover:text-indigo-950 transition-all shadow-sm active:scale-90"
+                  >
+                    ←
+                  </button>
+                  <div className="flex items-center gap-2 px-6 py-2 bg-indigo-50 border border-indigo-100 rounded-2xl text-[10px] font-black text-indigo-950 uppercase tracking-widest">
+                     Page {propertyPage} of {totalPropertyPages}
+                  </div>
+                  <button 
+                    disabled={!propertyPagination.hasMore}
+                    onClick={() => setPropertyPage(p => p + 1)}
+                    className="w-12 h-12 flex items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 disabled:opacity-20 hover:border-indigo-950 hover:text-indigo-950 transition-all shadow-sm active:scale-90"
+                  >
+                    →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Sidebar - Market & Intel */}
+          <div className="lg:col-span-4 space-y-10">
+            {/* Quick Strategic Actions */}
+            <div className="glass-card bg-indigo-950 p-8 rounded-[3rem] shadow-2xl shadow-indigo-950/20 overflow-hidden relative group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700"></div>
+              <h3 className="text-xl font-black text-white mb-8 flex items-center gap-2 relative z-10 uppercase tracking-tighter">
+                <Sparkles className="text-amber-400" size={18} />
+                Strategic Access
+              </h3>
+              <div className="grid grid-cols-2 gap-4 relative z-10">
+                <button 
+                  onClick={() => navigate('/valuation')}
+                  className="flex flex-col gap-3 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400/50 transition-all duration-300"
+                >
+                  <BarChart3 className="text-amber-400" size={24} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">Valuation Engine</span>
+                </button>
+                <button 
+                  onClick={() => navigate('/roi-planner')}
+                  className="flex flex-col gap-3 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-blue-400/50 transition-all duration-300"
+                >
+                  <TrendingUp className="text-blue-400" size={24} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">ROI Intelligence</span>
+                </button>
+                <button 
+                  onClick={() => navigate('/recommendations')}
+                  className="flex flex-col gap-3 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-emerald-400/50 transition-all duration-300"
+                >
+                  <Sparkles className="text-emerald-400" size={24} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">Elite Catalog</span>
+                </button>
+                <button 
+                  className="flex flex-col gap-3 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-400/50 transition-all duration-300"
+                >
+                  <Clock className="text-purple-400" size={24} />
+                  <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">Market History</span>
+                </button>
               </div>
             </div>
-            <button onClick={() => navigate('/analytics')} className="w-full mt-6 py-2 bg-blue-600 rounded-xl text-sm font-bold hover:bg-blue-500 transition-colors">
-              Full Market Analysis
-            </button>
-          </div>
 
-          {/* Top Recommendations */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">💡 Top Opportunities</h2>
-            <div className="space-y-4">
-              {loading ? (
-                [1,2,3].map(i => <div key={i} className="h-16 bg-slate-100 rounded-xl animate-pulse" />)
-              ) : recommendations.length > 0 ? (
-                recommendations.slice(0, 3).map(rec => (
-                  <div key={rec._id} className="p-3 border border-slate-100 rounded-xl hover:border-amber-200 hover:bg-amber-50/30 transition-all group">
-                    <p className="text-sm font-bold text-slate-800 line-clamp-1">{rec.title}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[10px] font-black uppercase text-amber-600 tracking-widest">{rec.difficulty}</span>
-                      <span className="text-xs font-bold text-emerald-600">ROI: {rec.expectedROI}%</span>
+            {/* Smart Opportunities */}
+            <div className="glass-card bg-white border border-slate-100 rounded-[3rem] p-10 shadow-xl shadow-indigo-950/5">
+              <h2 className="text-2xl font-black text-indigo-950 mb-8 tracking-tight">Intelligence Feed</h2>
+              <div className="space-y-6">
+                {loading ? (
+                  [1,2,3].map(i => <div key={i} className="h-24 bg-slate-50 border border-slate-100 rounded-3xl animate-pulse" />)
+                ) : recommendations.length > 0 ? (
+                  recommendations.slice(0, 3).map(rec => (
+                    <div key={rec._id} className="group p-6 border border-slate-100 rounded-[2rem] hover:bg-indigo-50 hover:border-indigo-200 transition-all duration-500 cursor-pointer">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[9px] font-black uppercase text-amber-500 tracking-[0.2em]">{rec.category || 'General'}</span>
+                        <TrendingUp className="text-emerald-500" size={14} />
+                      </div>
+                      <h4 className="text-sm font-black text-indigo-950 line-clamp-1 mb-4 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{rec.title}</h4>
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-1 text-[10px] font-black text-emerald-600">
+                            <Plus size={10} strokeWidth={3} />
+                            ROI: {rec.expectedROI}%
+                         </div>
+                         <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-indigo-900 shadow-sm group-hover:bg-indigo-950 group-hover:text-white transition-all transform group-hover:translate-x-1">
+                            <ChevronRight size={14} />
+                         </div>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 px-6 border-2 border-dashed border-slate-100 rounded-[2.5rem]">
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">No Active Intelligence</p>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-slate-500 italic">No recommendations found.</p>
-              )}
-              <button 
-                onClick={() => navigate('/recommendations')}
-                className="w-full text-center text-sm font-bold text-blue-600 hover:text-blue-700 pt-2"
-              >
-                View all tips →
-              </button>
+                )}
+                
+                <button 
+                  onClick={() => navigate('/recommendations')}
+                  className="w-full flex items-center justify-center gap-3 py-5 bg-slate-50 border border-slate-100 rounded-2xl text-[10px] font-black text-indigo-950 uppercase tracking-widest hover:bg-indigo-950 hover:text-white transition-all duration-300"
+                >
+                  Enter Elite Catalog
+                  <ChevronRight size={14} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+
+            {/* Pro Tips / Ad */}
+            <div className="relative group overflow-hidden rounded-[3rem]">
+               <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 transform group-hover:scale-110 transition-transform duration-700"></div>
+               <div className="relative p-10">
+                  <BarChart3 className="text-white/20 absolute -right-4 -bottom-4" size={120} />
+                  <h4 className="text-indigo-950 text-xl font-black mb-4 relative z-10 leading-tight">Master the <br/><span className="instrument-serif italic text-2xl">Property Market</span></h4>
+                  <p className="text-indigo-900/70 text-xs font-bold font-medium leading-relaxed mb-6 relative z-10 max-w-[12rem]">
+                    Learn how our top investors achieve consistent <span className="font-black text-indigo-950">20%+ CAGR</span> by timing renovations perfectly.
+                  </p>
+                  <button className="px-6 py-3 bg-indigo-950 text-white rounded-xl text-[10px] font-black uppercase tracking-widest relative z-10 hover:shadow-xl transition-all active:scale-95">
+                    Unlock Training
+                  </button>
+               </div>
             </div>
           </div>
         </div>

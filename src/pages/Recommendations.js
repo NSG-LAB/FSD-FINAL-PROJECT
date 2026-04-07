@@ -7,13 +7,14 @@ import {
   Star, 
   Clock, 
   TrendingUp, 
-  Info,
   ChevronRight,
   Hammer,
   Paintbrush,
   Lightbulb,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  Sparkles,
+  Zap
 } from 'lucide-react';
 
 const Recommendations = () => {
@@ -37,11 +38,11 @@ const Recommendations = () => {
   }, []);
 
   const categories = [
-    { id: 'all', label: 'All Upgrades', icon: <Search size={16} /> },
-    { id: 'Interior', label: 'Interiors', icon: <Paintbrush size={16} /> },
-    { id: 'Exterior', label: 'Exteriors', icon: <Hammer size={16} /> },
-    { id: 'Smart Home', label: 'Smart Tech', icon: <Smartphone size={16} /> },
-    { id: 'Energy', label: 'Energy', icon: <Lightbulb size={16} /> },
+    { id: 'all', label: 'All Intelligence', icon: <Sparkles size={16} /> },
+    { id: 'Interior', label: 'Architectural Interiors', icon: <Paintbrush size={16} /> },
+    { id: 'Exterior', label: 'Structural Exteriors', icon: <Hammer size={16} /> },
+    { id: 'Smart Home', label: 'Automation', icon: <Smartphone size={16} /> },
+    { id: 'Energy', label: 'Sustainability', icon: <Lightbulb size={16} /> },
   ];
 
   const filteredItems = recommendations.filter(item => {
@@ -53,102 +54,121 @@ const Recommendations = () => {
 
   const getCategoryIcon = (category) => {
     switch (category) {
-      case 'Interior': return <Paintbrush className="text-indigo-500" />;
-      case 'Exterior': return <Hammer className="text-amber-600" />;
-      case 'Energy Efficiency': return <Lightbulb className="text-yellow-500" />;
-      case 'Smart Home': return <Smartphone className="text-blue-500" />;
-      default: return <Star className="text-amber-500" />;
+      case 'Interior': return <Paintbrush className="text-indigo-400" />;
+      case 'Exterior': return <Hammer className="text-amber-500" />;
+      case 'Energy Efficiency': return <Lightbulb className="text-yellow-400" />;
+      case 'Smart Home': return <Smartphone className="text-blue-400" />;
+      default: return <Star className="text-amber-400" />;
     }
   };
 
   return (
-    <div className="min-h-screen ui-page py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-indigo-950">
-            Expert <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-amber-700">Improvement</span> Catalog
+    <div className="min-h-screen bg-slate-50 pt-32 pb-24 px-6 relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-indigo-950 to-transparent opacity-[0.03] pointer-events-none"></div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Elite Header */}
+        <div className="text-center mb-20 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-700 text-xs font-black uppercase tracking-widest mb-6">
+            <Sparkles size={14} />
+            Market Authority
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight text-indigo-950 mb-8 leading-[1.1]">
+             Elite <span className="instrument-serif italic text-amber-500">Value-Add</span> Catalog
           </h1>
-          <p className="text-lg text-slate-600 max-w-3xl">
-            Curated list of high-impact renovations designed to maximize your property's market value and aesthetic appeal.
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
+            Curated intelligence for high-yield property enhancements, leveraging national market trends and architectural best practices.
           </p>
         </div>
 
-        {/* Global Controls */}
-        <div className="flex flex-col lg:flex-row gap-6 mb-12 items-center justify-between">
-          <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+        {/* Intelligence Controls */}
+        <div className="glass-card mb-16 p-2 rounded-[2.5rem] flex flex-col lg:flex-row gap-4 items-center shadow-xl shadow-indigo-950/5">
+          <div className="flex flex-wrap gap-2 w-full lg:w-auto p-2">
             {categories.map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setFilter(cat.id)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                className={`flex items-center gap-3 px-6 py-4 rounded-3xl text-sm font-black transition-all duration-300 ${
                   filter === cat.id 
-                  ? 'bg-indigo-900 text-white border-indigo-900 shadow-lg' 
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
+                  ? 'bg-indigo-950 text-white shadow-xl shadow-indigo-950/20' 
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-indigo-950'
                 }`}
               >
                 {cat.icon}
-                {cat.label}
+                <span className="tracking-tight">{cat.label}</span>
               </button>
             ))}
           </div>
 
-          <div className="relative w-full lg:w-96">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+          <div className="relative w-full lg:flex-1 h-full px-4 border-l border-slate-100 hidden lg:block">
+            <Search className="absolute left-10 top-1/2 -translate-y-1/2 text-slate-300" size={24} />
             <input
               type="text"
-              placeholder="Search upgrades..."
+              placeholder="Search intelligence by keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-amber-400 outline-none shadow-sm transition-all text-slate-700 font-medium"
+              className="w-full pl-16 pr-8 py-6 bg-transparent outline-none text-lg font-bold text-indigo-950 placeholder:text-slate-300"
             />
           </div>
         </div>
 
-        {/* Main Grid */}
+        {/* Visual Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-80 bg-slate-100 animate-pulse rounded-[2.5rem]"></div>
+              <div key={i} className="h-[450px] rounded-[3rem] bg-white border border-slate-100 animate-pulse"></div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="group ui-card hover:border-amber-200 transition-all duration-500 rounded-[2.5rem] bg-white border border-slate-100 shadow-sm overflow-hidden flex flex-col hover:shadow-2xl">
-                <div className="p-8 flex-1">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="p-4 bg-slate-50 rounded-2xl group-hover:scale-110 transition-transform duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {filteredItems.map((item, index) => (
+              <div 
+                key={item.id} 
+                className="group relative bg-white border border-slate-100 rounded-[3rem] p-10 hover:shadow-2xl hover:shadow-indigo-950/10 transition-all duration-500 flex flex-col animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="flex justify-between items-start mb-10">
+                  <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center group-hover:scale-110 group-hover:bg-indigo-950 group-hover:border-indigo-950 transition-all duration-500">
+                    <div className="group-hover:text-amber-400 transition-colors duration-500">
                       {getCategoryIcon(item.category)}
                     </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full border border-green-100">
-                      <TrendingUp size={14} />
-                      <span className="text-[10px] font-black uppercase">High ROI</span>
-                    </div>
                   </div>
-
-                  <h3 className="text-2xl font-bold text-indigo-950 mb-3 leading-tight group-hover:text-indigo-700 transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-slate-500 line-clamp-3 text-sm font-medium leading-relaxed mb-6">
-                    {item.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-50">
-                    <div className="flex items-center gap-2">
-                       <Clock size={16} className="text-slate-300" />
-                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{item.durationMonths || 2} Months</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                       <ShieldCheck size={16} className="text-slate-300" />
-                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Expert Verified</span>
-                    </div>
+                  <div className="flex items-center gap-1.5 px-4 py-2 bg-amber-400 text-indigo-950 rounded-xl font-black text-[10px] uppercase tracking-wider">
+                    <Zap size={12} fill="currentColor" />
+                    Strategic ROI
                   </div>
                 </div>
 
-                <button className="w-full bg-slate-50 group-hover:bg-indigo-900 group-hover:text-white py-4 transition-colors font-bold text-slate-600 flex items-center justify-center gap-2">
-                   View Project Details
-                   <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                <h3 className="text-3xl font-black text-indigo-950 mb-6 leading-tight group-hover:text-amber-500 transition-colors">
+                  {item.title}
+                </h3>
+                <p className="text-slate-500 font-medium leading-relaxed mb-10 line-clamp-4 flex-grow">
+                  {item.description}
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 mb-10 p-6 rounded-3xl bg-slate-50 group-hover:bg-indigo-50 transition-colors">
+                  <div className="flex flex-col gap-1">
+                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Timeframe</span>
+                     <div className="flex items-center gap-2 text-indigo-950 font-black">
+                        <Clock size={16} />
+                        {item.durationMonths || 2} Months
+                     </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                     <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Confidence</span>
+                     <div className="flex items-center gap-2 text-indigo-950 font-black">
+                        <ShieldCheck size={16} />
+                        High
+                     </div>
+                  </div>
+                </div>
+
+                <button className="flex items-center justify-between w-full p-2 group/btn">
+                  <span className="text-sm font-black text-indigo-950 group-hover/btn:translate-x-2 transition-transform duration-300">Detailed Analysis</span>
+                  <div className="w-12 h-12 rounded-full border border-slate-100 flex items-center justify-center group-hover/btn:bg-indigo-950 group-hover/btn:text-white transition-all duration-300">
+                    <ChevronRight size={20} />
+                  </div>
                 </button>
               </div>
             ))}
@@ -156,31 +176,39 @@ const Recommendations = () => {
         )}
 
         {!loading && filteredItems.length === 0 && (
-          <div className="text-center py-32">
-             <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search size={32} className="text-slate-200" />
+          <div className="text-center py-40 bg-white rounded-[4rem] border-2 border-dashed border-slate-100">
+             <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-8">
+                <Search size={40} className="text-slate-200" />
              </div>
-             <h3 className="text-2xl font-bold text-slate-400">No matching upgrades found</h3>
+             <h3 className="text-3xl font-black text-indigo-950 mb-4 tracking-tight">Intelligence Out of Reach</h3>
+             <p className="text-slate-500 font-medium mb-10">We couldn't find any upgrades matching your criteria.</p>
              <button 
                onClick={() => {setFilter('all'); setSearch('');}}
-               className="mt-4 text-indigo-900 font-bold hover:underline"
+               className="px-10 py-5 bg-indigo-950 text-white rounded-2xl font-black text-sm tracking-tight hover:shadow-2xl transition-all active:scale-95"
              >
-               Clear all filters
+               Reset Intelligence Filter
              </button>
           </div>
         )}
 
-        {/* Pro Tip Section */}
-        <div className="mt-20 p-10 gold-gradient-bg rounded-[3rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20"></div>
-          <div className="relative z-10 w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shrink-0">
-             <Lightbulb size={40} className="text-white" />
-          </div>
-          <div className="relative z-10">
-             <h3 className="text-2xl font-bold mb-2">Exclusive Premium Tip</h3>
-             <p className="text-white/90 text-lg max-w-2xl">
-               Combine "Smart Security" with "Modern Landscaping" to achieve up to a <span className="font-black">12% instant boost</span> in curb appeal and property appraisal value.
-             </p>
+        {/* Global Strategy Insight */}
+        <div className="mt-32 relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-indigo-600 rounded-[4rem] blur-3xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div className="relative bg-indigo-950 rounded-[4rem] p-12 md:p-20 flex flex-col md:flex-row items-center gap-16 overflow-hidden">
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-12 translate-x-1/2"></div>
+            
+            <div className="w-24 h-24 md:w-32 md:h-32 bg-amber-400 rounded-[2.5rem] flex items-center justify-center shrink-0 shadow-2xl shadow-amber-400/20">
+               <Lightbulb size={48} className="text-indigo-950" />
+            </div>
+            
+            <div className="flex-1 space-y-6 text-center md:text-left">
+               <h3 className="text-3xl md:text-5xl font-black text-white leading-tight">
+                  Premium Value <span className="instrument-serif italic text-amber-400">Optimization</span>
+               </h3>
+               <p className="text-indigo-200/60 text-xl font-medium leading-relaxed max-w-2xl">
+                 Our data shows that combining <span className="text-white font-black hover:text-amber-400 cursor-help transition-colors">Lighting Architectural Enhancements</span> with <span className="text-white font-black hover:text-amber-400 cursor-help transition-colors">Smart Climate Controls</span> yields a compounding appreciation effect exceeding 14%.
+               </p>
+            </div>
           </div>
         </div>
       </div>
