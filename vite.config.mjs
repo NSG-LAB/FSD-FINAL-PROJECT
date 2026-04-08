@@ -2,7 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const basePath = process.env.VITE_BASE_PATH || '/';
+
 export default defineConfig({
+  base: basePath,
   plugins: [
     react(),
     VitePWA({
@@ -11,18 +14,19 @@ export default defineConfig({
         name: 'Property Value Enhancement',
         short_name: 'PropertyApp',
         description: "Enhance your property's value with personalized recommendations.",
-        start_url: '.',
+        start_url: basePath,
+        scope: basePath,
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#2563eb',
         icons: [
           {
-            src: '/icon-192x192.png',
+            src: 'icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: '/icon-512x512.png',
+            src: 'icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
           },

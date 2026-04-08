@@ -101,7 +101,7 @@ function App() {
   return (
     <ErrorBoundary>
       <HelmetProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Router basename={import.meta.env.BASE_URL} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <div className="min-h-screen ui-page">
             <Navigation />
             <main className="pt-16">
