@@ -74,7 +74,14 @@ const getResolvedBaseURL = () => {
   }
 
   if (!resolvedBaseURLPromise) {
-    resolvedBaseURLPromise = resolveDevBaseURL();
+    resolvedBaseURLPromise = resolveDevBaseURL().then((resolvedBaseURL) => {
+      // If backend is temporarily unavailable, avoid pinning fallback forever.
+      if (resolvedBaseURL === '/api') {
+        resolvedBaseURLPromise = null;
+      }
+
+      return resolvedBaseURL;
+    });
   }
 
   return resolvedBaseURLPromise;

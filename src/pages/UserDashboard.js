@@ -109,6 +109,14 @@ const UserDashboard = () => {
     setPropertyQuery(propertySearchInput.trim());
   };
 
+  const handlePropertyCreated = async () => {
+    setShowForm(false);
+    setPropertyPage(1);
+    setPropertySearchInput('');
+    setPropertyQuery('');
+    await fetchData(1, propertyPageSize, '');
+  };
+
   const totalPropertyPages = Math.max(1, Math.ceil(propertyPagination.count / propertyPagination.limit));
 
   return (
@@ -423,7 +431,7 @@ const UserDashboard = () => {
                <div className="relative p-10">
                   <BarChart3 className="text-white/20 absolute -right-4 -bottom-4" size={120} />
                   <h4 className="text-indigo-950 text-xl font-black mb-4 relative z-10 leading-tight">Master the <br/><span className="instrument-serif italic text-2xl">Property Market</span></h4>
-                  <p className="text-indigo-900/70 text-xs font-bold font-medium leading-relaxed mb-6 relative z-10 max-w-[12rem]">
+                  <p className="text-indigo-900/70 text-xs font-bold leading-relaxed mb-6 relative z-10 max-w-[12rem]">
                     Learn how our top investors achieve consistent <span className="font-black text-indigo-950">20%+ CAGR</span> by timing renovations perfectly.
                   </p>
                   <button className="px-6 py-3 bg-indigo-950 text-white rounded-xl text-[10px] font-black uppercase tracking-widest relative z-10 hover:shadow-xl transition-all active:scale-95">
