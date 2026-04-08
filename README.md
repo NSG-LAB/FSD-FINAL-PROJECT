@@ -9,6 +9,17 @@ The frontend now supports two reliable ways to connect to the backend during dev
 1. Vite dev proxy (default)
 2. Explicit API URL via environment variable
 
+## Profile Management
+
+The app now includes a shared profile page for both normal users and admins.
+
+- Route: `/profile`
+- Access: authenticated users only
+- Features:
+	- View profile details
+	- Update first name, last name, phone, city, state, and bio
+	- Read-only email and role visibility
+
 ### Development connection behavior
 
 - Frontend runs on `http://localhost:3000`

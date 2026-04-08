@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/authSlice';
 import { authAPI } from '../services/api';
-import { Menu, X, LogOut, LayoutDashboard, Bell, Calculator, TrendingUp } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, Bell, Calculator, TrendingUp, User } from 'lucide-react';
 
 const Navigation = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -72,6 +72,10 @@ const Navigation = () => {
               <NavLink to="/notifications" className={linkClass}>
                 <Bell size={18} />
               </NavLink>
+
+              <NavLink to="/profile" className={linkClass}>
+                <User size={18} /> Profile
+              </NavLink>
               
               <Link 
                 to={user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} 
@@ -120,7 +124,8 @@ const Navigation = () => {
           
           {isAuthenticated ? (
             <>
-              <Link to="/user/dashboard" className="btn btn-primary w-full justify-start">My Dashboard</Link>
+              <Link to={user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="btn btn-primary w-full justify-start">My Dashboard</Link>
+              <Link to="/profile" className="btn btn-outline w-full justify-start">My Profile</Link>
               <button onClick={handleLogout} className="btn btn-outline w-full justify-start text-coral border-coral hover:bg-coral">Logout</button>
             </>
           ) : (

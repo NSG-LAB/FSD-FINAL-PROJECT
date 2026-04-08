@@ -24,6 +24,7 @@ const ValuationEstimator = lazy(() => import('./pages/ValuationEstimator'));
 const ROIPlanner = lazy(() => import('./pages/ROIPlanner'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const MonitoringDashboard = lazy(() => import('./pages/MonitoringDashboard'));
+const Profile = lazy(() => import('./pages/Profile'));
 
 const UserRoute = ({ children, appLoading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -153,6 +154,14 @@ function App() {
                     element={(
                       <UserRoute appLoading={appLoading}>
                         <Notifications />
+                      </UserRoute>
+                    )}
+                  />
+                  <Route
+                    path="/profile"
+                    element={(
+                      <UserRoute appLoading={appLoading}>
+                        <Profile />
                       </UserRoute>
                     )}
                   />
