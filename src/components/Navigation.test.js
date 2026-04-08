@@ -19,6 +19,6 @@ describe('Navigation', () => {
     );
     // Check for some navigation text
     expect(screen.getByText(/login/i)).toBeInTheDocument();
-    expect(screen.getByText(/register/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /join now/i })).toBeInTheDocument();
   });
 });
