@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/FSD-FINAL-PROJECT/sw.js', { scope: '/FSD-FINAL-PROJECT/' })})}
