@@ -376,6 +376,7 @@ const UserDashboard = () => {
                   <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">Elite Catalog</span>
                 </button>
                 <button 
+                  onClick={() => navigate('/renovation-tracker')}
                   className="flex flex-col gap-3 p-6 rounded-[2rem] bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-400/50 transition-all duration-300"
                 >
                   <Clock className="text-purple-400" size={24} />

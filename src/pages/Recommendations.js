@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { recommendationAPI } from '../services/api';
+import { recommendationAPI, valuationAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { 
   Search, 
@@ -22,27 +22,69 @@ const Recommendations = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [city, setCity] = useState('');
+  const [budget, setBudget] = useState('');
+  const [propertyAge, setPropertyAge] = useState('');
+  const [userGoals, setUserGoals] = useState('');
+  const [costEstimate, setCostEstimate] = useState(null);
+  const [estimating, setEstimating] = useState(false);
+
+  const loadRecommendations = async (params = {}) => {
+    setLoading(true);
+    try {
+      const response = await recommendationAPI.getRecommendations({
+        limit: 60,
+        offset: 0,
+        sortBy: params.sortBy || 'priority',
+        order: 'DESC',
+        ...params,
+      });
+      setRecommendations(response?.data?.recommendations || []);
+    } catch (error) {
+      toast.error('Failed to load expert recommendations');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        const response = await recommendationAPI.getAll();
-        setRecommendations(response.data);
-      } catch (error) {
-        toast.error('Failed to load expert recommendations');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRecommendations();
+    loadRecommendations();
   }, []);
+
+  const applySmartRanking = async () => {
+    await loadRecommendations({
+      sortBy: 'personalized',
+      city,
+      budget: budget || undefined,
+      propertyAge: propertyAge || undefined,
+      userGoals: userGoals || undefined,
+    });
+  };
+
+  const estimateCost = async () => {
+    setEstimating(true);
+    try {
+      const response = await valuationAPI.estimateRenovationCost({
+        city,
+        areaType: 'urban',
+        category: filter === 'all' ? 'general' : filter,
+        propertyAgeYears: Number(propertyAge || 0),
+        budget: Number(budget || 0)
+      });
+      setCostEstimate(response?.data || null);
+    } catch (error) {
+      toast.error('Unable to estimate renovation cost for this location.');
+    } finally {
+      setEstimating(false);
+    }
+  };
 
   const categories = [
     { id: 'all', label: 'All Intelligence', icon: <Sparkles size={16} /> },
-    { id: 'Interior', label: 'Architectural Interiors', icon: <Paintbrush size={16} /> },
-    { id: 'Exterior', label: 'Structural Exteriors', icon: <Hammer size={16} /> },
-    { id: 'Smart Home', label: 'Automation', icon: <Smartphone size={16} /> },
-    { id: 'Energy', label: 'Sustainability', icon: <Lightbulb size={16} /> },
+    { id: 'interior-design', label: 'Architectural Interiors', icon: <Paintbrush size={16} /> },
+    { id: 'garden-outdoor', label: 'Structural Exteriors', icon: <Hammer size={16} /> },
+    { id: 'lighting-fixtures', label: 'Automation', icon: <Smartphone size={16} /> },
+    { id: 'energy-efficiency', label: 'Sustainability', icon: <Lightbulb size={16} /> },
   ];
 
   const filteredItems = recommendations.filter(item => {
@@ -54,10 +96,10 @@ const Recommendations = () => {
 
   const getCategoryIcon = (category) => {
     switch (category) {
-      case 'Interior': return <Paintbrush className="text-indigo-400" />;
-      case 'Exterior': return <Hammer className="text-amber-500" />;
-      case 'Energy Efficiency': return <Lightbulb className="text-yellow-400" />;
-      case 'Smart Home': return <Smartphone className="text-blue-400" />;
+      case 'interior-design': return <Paintbrush className="text-indigo-400" />;
+      case 'garden-outdoor': return <Hammer className="text-amber-500" />;
+      case 'energy-efficiency': return <Lightbulb className="text-yellow-400" />;
+      case 'lighting-fixtures': return <Smartphone className="text-blue-400" />;
       default: return <Star className="text-amber-400" />;
     }
   };
@@ -111,6 +153,84 @@ const Recommendations = () => {
               className="w-full pl-16 pr-8 py-6 bg-transparent outline-none text-lg font-bold text-indigo-950 placeholder:text-slate-300"
             />
           </div>
+        </div>
+
+        <div className="glass-card mb-16 p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-indigo-950/5 bg-white border border-slate-100">
+          <h2 className="text-2xl font-black text-indigo-950 tracking-tight mb-5">Smart Recommendation Ranking</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="City (e.g., Chennai)"
+              className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium"
+            />
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              placeholder="Budget"
+              className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium"
+            />
+            <input
+              type="number"
+              value={propertyAge}
+              onChange={(e) => setPropertyAge(e.target.value)}
+              placeholder="Property age (years)"
+              className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium"
+            />
+            <input
+              type="text"
+              value={userGoals}
+              onChange={(e) => setUserGoals(e.target.value)}
+              placeholder="Goals (eco, quick, luxury)"
+              className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium"
+            />
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={applySmartRanking}
+              className="px-5 py-3 rounded-xl bg-indigo-950 text-white text-xs font-black uppercase tracking-widest"
+            >
+              Apply Smart Ranking
+            </button>
+            <button
+              type="button"
+              onClick={estimateCost}
+              disabled={estimating}
+              className="px-5 py-3 rounded-xl bg-amber-400 text-indigo-950 text-xs font-black uppercase tracking-widest disabled:opacity-60"
+            >
+              {estimating ? 'Estimating...' : 'Estimate Cost by Location'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCity('');
+                setBudget('');
+                setPropertyAge('');
+                setUserGoals('');
+                setCostEstimate(null);
+                loadRecommendations();
+              }}
+              className="px-5 py-3 rounded-xl bg-slate-100 text-slate-700 text-xs font-black uppercase tracking-widest"
+            >
+              Reset
+            </button>
+          </div>
+
+          {costEstimate?.costRange && (
+            <div className="mt-5 rounded-2xl bg-slate-50 border border-slate-100 p-4">
+              <p className="text-xs uppercase tracking-widest font-black text-slate-400">Cost Estimator by Location</p>
+              <p className="text-sm text-slate-600 mt-2">
+                {costEstimate.city} ({costEstimate.areaType}) • {costEstimate.category}
+              </p>
+              <p className="text-lg font-black text-indigo-950 mt-1">
+                Estimated Range: ₹{Number(costEstimate.costRange.min || 0).toLocaleString()} - ₹{Number(costEstimate.costRange.max || 0).toLocaleString()}
+              </p>
+              <p className="text-xs font-bold text-slate-500 mt-1">Affordability: {costEstimate.affordability || 'unknown'}</p>
+            </div>
+          )}
         </div>
 
         {/* Visual Grid */}

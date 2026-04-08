@@ -25,6 +25,8 @@ const ROIPlanner = lazy(() => import('./pages/ROIPlanner'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const MonitoringDashboard = lazy(() => import('./pages/MonitoringDashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
+const RenovationTracker = lazy(() => import('./pages/RenovationTracker'));
+const AdminRenovationTrackers = lazy(() => import('./pages/AdminRenovationTrackers'));
 
 const UserRoute = ({ children, appLoading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -147,6 +149,14 @@ function App() {
                       </AdminRoute>
                     )}
                   />
+                  <Route
+                    path="/admin/renovation-trackers"
+                    element={(
+                      <AdminRoute appLoading={appLoading}>
+                        <AdminRenovationTrackers />
+                      </AdminRoute>
+                    )}
+                  />
                   <Route path="/valuation" element={<ValuationEstimator />} />
                   <Route path="/roi-planner" element={<ROIPlanner />} />
                   <Route
@@ -162,6 +172,14 @@ function App() {
                     element={(
                       <UserRoute appLoading={appLoading}>
                         <Profile />
+                      </UserRoute>
+                    )}
+                  />
+                  <Route
+                    path="/renovation-tracker"
+                    element={(
+                      <UserRoute appLoading={appLoading}>
+                        <RenovationTracker />
                       </UserRoute>
                     )}
                   />

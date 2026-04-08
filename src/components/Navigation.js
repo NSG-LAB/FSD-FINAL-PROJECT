@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { logout } from '../redux/authSlice';
 import { authAPI } from '../services/api';
-import { Menu, X, LogOut, LayoutDashboard, Bell, Calculator, TrendingUp, User } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, Bell, Calculator, TrendingUp, User, ClipboardList } from 'lucide-react';
 
 const Navigation = () => {
   const { isAuthenticated, user } = useSelector(state => state.auth);
@@ -64,6 +64,9 @@ const Navigation = () => {
           <NavLink to="/valuation" className={linkClass}>
             Valuation
           </NavLink>
+          <NavLink to="/renovation-tracker" className={linkClass}>
+            <ClipboardList size={18} /> Tracker
+          </NavLink>
 
           <div className="h-6 w-px bg-indigo/10 mx-2" />
 
@@ -76,6 +79,12 @@ const Navigation = () => {
               <NavLink to="/profile" className={linkClass}>
                 <User size={18} /> Profile
               </NavLink>
+
+              {user?.role === 'admin' && (
+                <NavLink to="/admin/renovation-trackers" className={linkClass}>
+                  <ClipboardList size={18} /> Admin Trackers
+                </NavLink>
+              )}
               
               <Link 
                 to={user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} 
@@ -119,12 +128,16 @@ const Navigation = () => {
           <NavLink to="/recommendations" className="text-lg font-medium text-indigo">Recommendations</NavLink>
           <NavLink to="/roi-planner" className="text-lg font-medium text-indigo">ROI Planner</NavLink>
           <NavLink to="/valuation" className="text-lg font-medium text-indigo">Valuation</NavLink>
+          <NavLink to="/renovation-tracker" className="text-lg font-medium text-indigo">Tracker</NavLink>
           
           <div className="h-px bg-indigo/5 my-2" />
           
           {isAuthenticated ? (
             <>
               <Link to={user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard'} className="btn btn-primary w-full justify-start">My Dashboard</Link>
+              {user?.role === 'admin' && (
+                <Link to="/admin/renovation-trackers" className="btn btn-outline w-full justify-start">Admin Trackers</Link>
+              )}
               <Link to="/profile" className="btn btn-outline w-full justify-start">My Profile</Link>
               <button onClick={handleLogout} className="btn btn-outline w-full justify-start text-coral border-coral hover:bg-coral">Logout</button>
             </>

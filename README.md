@@ -20,6 +20,22 @@ The app now includes a shared profile page for both normal users and admins.
 	- Update first name, last name, phone, city, state, and bio
 	- Read-only email and role visibility
 
+## Renovation Intelligence Features
+
+The app now includes three new renovation intelligence capabilities:
+
+1. Renovation Project Tracker
+	- Route: `/renovation-tracker`
+	- Track project tasks, planned budget vs spent budget, completion percentage, and expected value uplift timeline.
+	- Admin route: `/admin/renovation-trackers`
+	- Admin tools: filter trackers, sort by key metrics, page through large tracker lists, CSV export, and uplift vs spend over time charts.
+2. Smart Recommendation Ranking
+	- Available on the Recommendations page.
+	- Personalize recommendation ranking by city, budget, property age, and user goals.
+3. Cost Estimator by Location
+	- Available on the Recommendations page.
+	- Get dynamic renovation cost ranges using location and category multipliers.
+
 ### Development connection behavior
 
 - Frontend runs on `http://localhost:3000`

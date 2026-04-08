@@ -171,6 +171,7 @@ export const authAPI = {
 
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
+  getProfileSummary: () => api.get('/users/profile/summary'),
   updateProfile: (data) => api.put('/users/profile', data),
   getAllUsers: () => api.get('/users'),
 };
@@ -185,6 +186,8 @@ export const propertyAPI = {
 
 export const recommendationAPI = {
   getRecommendations: (filters) => api.get('/recommendations', { params: filters }),
+  getPersonalizedRecommendations: (params) =>
+    api.get('/recommendations', { params: { ...params, sortBy: 'personalized' } }),
   getPropertyRecommendations: (propertyId) => api.get(`/recommendations/property/${propertyId}`),
   createRecommendation: (data) => api.post('/recommendations', data),
   updateRecommendation: (id, data) => api.put(`/recommendations/${id}`, data),
@@ -193,6 +196,24 @@ export const recommendationAPI = {
 
 export const valuationAPI = {
   estimateValue: (data) => api.post('/valuations/estimate', data),
+  estimateRenovationCost: (data) => api.post('/valuations/cost-estimate', data),
+};
+
+export const renovationProjectAPI = {
+  getProjects: (params) => api.get('/renovation-projects', { params }),
+  getUpliftSpendAnalytics: (params) => api.get('/renovation-projects/analytics/uplift-vs-spend', { params }),
+  exportProjectsCsv: (params) =>
+    api.get('/renovation-projects/export/csv', {
+      params,
+      responseType: 'blob',
+    }),
+  getProjectById: (id) => api.get(`/renovation-projects/${id}`),
+  createProject: (data) => api.post('/renovation-projects', data),
+  updateProject: (id, data) => api.put(`/renovation-projects/${id}`, data),
+  updateTasks: (id, data) => api.patch(`/renovation-projects/${id}/tasks`, data),
+  updateBudget: (id, data) => api.patch(`/renovation-projects/${id}/budget`, data),
+  addTimelineEntry: (id, data) => api.post(`/renovation-projects/${id}/timeline`, data),
+  deleteProject: (id) => api.delete(`/renovation-projects/${id}`),
 };
 
 export const analyticsAPI = {
