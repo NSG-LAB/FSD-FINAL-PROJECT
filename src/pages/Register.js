@@ -36,7 +36,8 @@ const Register = () => {
       const detailedMessage = Array.isArray(validationErrors)
         ? validationErrors.map((item) => item.message).join(', ')
         : null;
-      const message = detailedMessage || error.response?.data?.message || 'Registration failed';
+      const networkFallback = 'Unable to reach registration service. Please verify backend URL/CORS and try again.';
+      const message = detailedMessage || error.response?.data?.message || networkFallback;
       dispatch(setError(message));
       toast.error(message);
     } finally {
