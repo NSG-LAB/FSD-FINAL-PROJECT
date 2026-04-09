@@ -2,6 +2,22 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const normalizeBasePath = (rawBasePath) => {
+  const trimmedBasePath = String(rawBasePath || '/').trim();
+
+  if (!trimmedBasePath || trimmedBasePath === '/') {
+    return '/';
+  }
+
+  const withLeadingSlash = trimmedBasePath.startsWith('/')
+    ? trimmedBasePath
+    : `/${trimmedBasePath}`;
+
+  return withLeadingSlash.endsWith('/')
+    ? withLeadingSlash
+    : `${withLeadingSlash}/`;
+};
+
 const getBackendTarget = (env) => {
   const explicitOrigin = env.VITE_BACKEND_ORIGIN;
   if (explicitOrigin) {
@@ -23,7 +39,7 @@ const getBackendTarget = (env) => {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const basePath = env.VITE_BASE_PATH || '/';
+  const basePath = normalizeBasePath(env.VITE_BASE_PATH);
   const backendTarget = getBackendTarget(env);
 
   return {
