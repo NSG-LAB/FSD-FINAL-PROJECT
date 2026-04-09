@@ -636,7 +636,7 @@ const PortfolioWorkspace = () => {
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) {
-      toast.error('Popup blocked. Allow popups for this site, or use Export CSV as a fallback.');
+      toast.error('Popup blocked. Please allow popups for this site in browser settings, then try again. Alternatively, use Export CSV as a fallback.');
       return;
     }
 
