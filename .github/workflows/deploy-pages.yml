@@ -41,6 +41,7 @@ jobs:
       - name: Build project
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_API_URL: https://fsd-final-project-backend-production.up.railway.app/api
         run: npm run build
 
       - name: Add SPA fallback for GitHub Pages
