@@ -1,15 +1,16 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const readViteEnv = () => {
+const viteEnv = (() => {
   try {
-    return Function('return import.meta.env')();
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      return import.meta.env;
+    }
   } catch (_) {
-    return undefined;
+    // Fall through to empty env object for non-Vite runtimes.
   }
-};
-
-const viteEnv = readViteEnv() || {};
+  return {};
+})();
 const nodeEnv = typeof process !== 'undefined' && process.env ? process.env : {};
 const explicitBaseURL = viteEnv.VITE_API_URL || nodeEnv.VITE_API_URL;
 const isDev = typeof viteEnv.DEV === 'boolean' ? viteEnv.DEV : nodeEnv.NODE_ENV !== 'production';
