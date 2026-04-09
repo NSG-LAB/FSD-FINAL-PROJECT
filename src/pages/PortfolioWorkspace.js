@@ -334,23 +334,29 @@ const PortfolioWorkspace = () => {
     });
   }, [activeProperties]);
 
-  const assignedTaskItems = collabState.tasks.length === 0
-    ? <p className="text-xs text-slate-500">No tasks assigned.</p>
-    : collabState.tasks.map((task) => (
-      <div key={task.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
-        <p className="font-bold text-slate-800">{task.title}</p>
-        <p className="text-slate-500">{task.assigneeName} • Due {task.dueDate || 'TBD'}</p>
-      </div>
-    ));
+  const assignedTaskItems = useMemo(
+    () => (collabState.tasks.length === 0
+      ? <p className="text-xs text-slate-500">No tasks assigned.</p>
+      : collabState.tasks.map((task) => (
+        <div key={task.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
+          <p className="font-bold text-slate-800">{task.title}</p>
+          <p className="text-slate-500">{task.assigneeName} • Due {task.dueDate || 'TBD'}</p>
+        </div>
+      ))),
+    [collabState.tasks]
+  );
 
-  const recentActivityItems = collabState.activities.length === 0
-    ? <p className="text-xs text-slate-500">No activity yet.</p>
-    : collabState.activities.map((item) => (
-      <div key={item.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
-        <p className="font-semibold text-slate-700">{item.text}</p>
-        <p className="text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
-      </div>
-    ));
+  const recentActivityItems = useMemo(
+    () => (collabState.activities.length === 0
+      ? <p className="text-xs text-slate-500">No activity yet.</p>
+      : collabState.activities.map((item) => (
+        <div key={item.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
+          <p className="font-semibold text-slate-700">{item.text}</p>
+          <p className="text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
+        </div>
+      ))),
+    [collabState.activities]
+  );
 
   const addActivity = (text) => {
     setCollabState((prev) => ({
@@ -630,7 +636,7 @@ const PortfolioWorkspace = () => {
 
     const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) {
-      toast.error('Popup blocked. Please allow popups to export PDF.');
+      toast.error('Popup blocked. Allow popups for this site, or use Export CSV as a fallback.');
       return;
     }
 
