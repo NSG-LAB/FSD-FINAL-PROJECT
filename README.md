@@ -46,6 +46,19 @@ The app now includes three new renovation intelligence capabilities:
 	- Available on the Recommendations page.
 	- Get dynamic renovation cost ranges using location and category multipliers.
 
+## Portfolio Workspace
+
+- Route: `/portfolio-workspace`
+- Access: authenticated users
+- Includes:
+	- Property portfolio create/edit/archive and portfolio ROI/risk summary
+	- Saved scenario modeling with side-by-side compare
+	- Automated budget/timeline/best-next-action alerts
+	- Document/media linking for invoices, permits, and before/after assets
+	- Collaboration tools for invites, task assignment, comments, and activity logs
+	- Admin-only risk flags and anomaly review queue
+	- Exportable CSV/PDF workspace summaries and offline/PWA readiness indicators
+
 ### Development connection behavior
 
 - Frontend runs on `http://localhost:3000`

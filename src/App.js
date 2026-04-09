@@ -28,6 +28,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const RenovationTracker = lazy(() => import('./pages/RenovationTracker'));
 const AdminRenovationTrackers = lazy(() => import('./pages/AdminRenovationTrackers'));
 const PropertyDetails = lazy(() => import('./pages/PropertyDetails'));
+const PortfolioWorkspace = lazy(() => import('./pages/PortfolioWorkspace'));
 
 const UserRoute = ({ children, appLoading }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -181,6 +182,14 @@ function App() {
                     element={(
                       <UserRoute appLoading={appLoading}>
                         <RenovationTracker />
+                      </UserRoute>
+                    )}
+                  />
+                  <Route
+                    path="/portfolio-workspace"
+                    element={(
+                      <UserRoute appLoading={appLoading}>
+                        <PortfolioWorkspace />
                       </UserRoute>
                     )}
                   />
