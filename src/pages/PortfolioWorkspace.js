@@ -34,6 +34,8 @@ const SCENARIOS_KEY = 'portfolio_saved_scenarios_v1';
 const MEDIA_KEY = 'portfolio_media_entries_v1';
 const COLLAB_KEY = 'portfolio_collab_state_v1';
 const ANOMALY_KEY = 'portfolio_anomaly_reviews_v1';
+const LOW_COMPLETION_THRESHOLD = 40;
+const HIGH_SPEND_RATIO = 0.7;
 
 const cityTrendMap = {
   Mumbai: 1.08,
@@ -160,12 +162,6 @@ const PortfolioWorkspace = () => {
         setProperties(fetchedProperties);
         setProjects(fetchedProjects);
 
-        if (!scenarioForm.propertyId && fetchedProperties[0]?.id) {
-          setScenarioForm((prev) => ({ ...prev, propertyId: fetchedProperties[0].id }));
-        }
-        if (!mediaForm.propertyId && fetchedProperties[0]?.id) {
-          setMediaForm((prev) => ({ ...prev, propertyId: fetchedProperties[0].id }));
-        }
       } catch (error) {
         showApiErrorToast({
           error,
@@ -178,6 +174,14 @@ const PortfolioWorkspace = () => {
 
     load();
   }, []);
+
+  useEffect(() => {
+    const defaultPropertyId = properties[0]?.id;
+    if (!defaultPropertyId) return;
+
+    setScenarioForm((prev) => (prev.propertyId ? prev : { ...prev, propertyId: defaultPropertyId }));
+    setMediaForm((prev) => (prev.propertyId ? prev : { ...prev, propertyId: defaultPropertyId }));
+  }, [properties]);
 
   useEffect(() => {
     writeJson(ARCHIVE_KEY, archivedIds);
@@ -268,7 +272,10 @@ const PortfolioWorkspace = () => {
     });
 
     const projectAlerts = projects
-      .filter((project) => Number(project.completionPercentage || 0) < 40 && Number(project.spentBudget || 0) > Number(project.plannedBudget || 0) * 0.7)
+      .filter((project) =>
+        Number(project.completionPercentage || 0) < LOW_COMPLETION_THRESHOLD
+        && Number(project.spentBudget || 0) > Number(project.plannedBudget || 0) * HIGH_SPEND_RATIO
+      )
       .map((project) => ({
         id: `project-${project.id}`,
         type: 'execution-risk',
