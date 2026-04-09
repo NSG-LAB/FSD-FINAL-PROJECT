@@ -334,6 +334,24 @@ const PortfolioWorkspace = () => {
     });
   }, [activeProperties]);
 
+  const assignedTaskItems = collabState.tasks.length === 0
+    ? <p className="text-xs text-slate-500">No tasks assigned.</p>
+    : collabState.tasks.map((task) => (
+      <div key={task.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
+        <p className="font-bold text-slate-800">{task.title}</p>
+        <p className="text-slate-500">{task.assigneeName} • Due {task.dueDate || 'TBD'}</p>
+      </div>
+    ));
+
+  const recentActivityItems = collabState.activities.length === 0
+    ? <p className="text-xs text-slate-500">No activity yet.</p>
+    : collabState.activities.map((item) => (
+      <div key={item.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
+        <p className="font-semibold text-slate-700">{item.text}</p>
+        <p className="text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
+      </div>
+    ));
+
   const addActivity = (text) => {
     setCollabState((prev) => ({
       ...prev,
@@ -1039,21 +1057,11 @@ const PortfolioWorkspace = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="rounded-xl border border-slate-100 p-3 max-h-52 overflow-auto bg-slate-50">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Assigned Tasks</p>
-                {collabState.tasks.length === 0 ? <p className="text-xs text-slate-500">No tasks assigned.</p> : collabState.tasks.map((task) => (
-                  <div key={task.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
-                    <p className="font-bold text-slate-800">{task.title}</p>
-                    <p className="text-slate-500">{task.assigneeName} • Due {task.dueDate || 'TBD'}</p>
-                  </div>
-                ))}
+                {assignedTaskItems}
               </div>
               <div className="rounded-xl border border-slate-100 p-3 max-h-52 overflow-auto bg-slate-50">
                 <p className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">Recent Activity</p>
-                {collabState.activities.length === 0 ? <p className="text-xs text-slate-500">No activity yet.</p> : collabState.activities.map((item) => (
-                  <div key={item.id} className="text-xs mb-2 pb-2 border-b border-slate-200">
-                    <p className="font-semibold text-slate-700">{item.text}</p>
-                    <p className="text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
-                  </div>
-                ))}
+                {recentActivityItems}
               </div>
             </div>
           </div>
