@@ -67,6 +67,9 @@ const Navigation = () => {
           <NavLink to="/renovation-tracker" className={linkClass}>
             <ClipboardList size={18} /> Tracker
           </NavLink>
+          <NavLink to="/portfolio-workspace" className={linkClass}>
+            Workspace
+          </NavLink>
 
           <div className="h-6 w-px bg-indigo/10 mx-2" />
 
@@ -129,6 +132,7 @@ const Navigation = () => {
           <NavLink to="/roi-planner" className="text-lg font-medium text-indigo">ROI Planner</NavLink>
           <NavLink to="/valuation" className="text-lg font-medium text-indigo">Valuation</NavLink>
           <NavLink to="/renovation-tracker" className="text-lg font-medium text-indigo">Tracker</NavLink>
+          <NavLink to="/portfolio-workspace" className="text-lg font-medium text-indigo">Workspace</NavLink>
           
           <div className="h-px bg-indigo/5 my-2" />
           
@@ -154,4 +158,3 @@ const Navigation = () => {
 };
 
 export default Navigation;
-

@@ -383,6 +383,13 @@ const UserDashboard = () => {
                   <span className="text-[10px] font-black text-white uppercase tracking-widest leading-tight">Market History</span>
                 </button>
               </div>
+              <button
+                onClick={() => navigate('/portfolio-workspace')}
+                className="mt-4 w-full flex items-center justify-center gap-2 rounded-2xl border border-amber-400/50 bg-amber-400/10 py-3 text-[10px] font-black uppercase tracking-widest text-white hover:bg-amber-400/20 transition-all"
+              >
+                <Sparkles size={14} className="text-amber-400" />
+                Open Portfolio Workspace
+              </button>
             </div>
 
             {/* Smart Opportunities */}
