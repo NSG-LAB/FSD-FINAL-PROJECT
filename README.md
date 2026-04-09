@@ -29,6 +29,16 @@ The app now includes three new renovation intelligence capabilities:
 	- Track project tasks, planned budget vs spent budget, completion percentage, and expected value uplift timeline.
 	- Admin route: `/admin/renovation-trackers`
 	- Admin tools: filter trackers, sort by key metrics, page through large tracker lists, CSV export, and uplift vs spend over time charts.
+
+## Property Details
+
+- Route: `/properties/:id`
+- Access: authenticated users (user/admin) with backend owner/admin authorization checks.
+- Features:
+	- View full property details, valuation metrics, and location/specs
+	- Review property-specific recommendations
+	- Manage enhancement checklist directly in the property view
+	- Delete property (authorized owner/admin)
 2. Smart Recommendation Ranking
 	- Available on the Recommendations page.
 	- Personalize recommendation ranking by city, budget, property age, and user goals.

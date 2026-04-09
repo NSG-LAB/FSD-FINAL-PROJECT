@@ -257,7 +257,7 @@ const UserDashboard = () => {
               ) : properties.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {properties.map(property => (
-                    <div key={property._id} className="group relative bg-white border border-slate-200/60 rounded-[2.5rem] p-8 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-950/5 transition-all duration-500 flex flex-col h-full overflow-hidden">
+                    <div key={property.id} className="group relative bg-white border border-slate-200/60 rounded-[2.5rem] p-8 hover:border-indigo-200 hover:shadow-2xl hover:shadow-indigo-950/5 transition-all duration-500 flex flex-col h-full overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50/50 rounded-bl-[4rem] group-hover:bg-amber-400/10 transition-colors"></div>
                       
                       <div className="flex justify-between items-start mb-6 relative z-10">
@@ -289,7 +289,7 @@ const UserDashboard = () => {
                           <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Current Valuation</p>
                           <p className="text-2xl font-black text-indigo-950 tracking-tighter">₹{(Number(property.currentValue) || 0).toLocaleString()}</p>
                         </div>
-                        <Link to={`/properties/${property._id}`} className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-950 hover:bg-indigo-950 hover:text-white transition-all duration-300">
+                        <Link to={`/properties/${property.id}`} className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-950 hover:bg-indigo-950 hover:text-white transition-all duration-300">
                           <ChevronRight size={20} />
                         </Link>
                       </div>

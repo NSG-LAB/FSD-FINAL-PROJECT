@@ -188,7 +188,7 @@ export const recommendationAPI = {
   getRecommendations: (filters) => api.get('/recommendations', { params: filters }),
   getPersonalizedRecommendations: (params) =>
     api.get('/recommendations', { params: { ...params, sortBy: 'personalized' } }),
-  getPropertyRecommendations: (propertyId) => api.get(`/recommendations/property/${propertyId}`),
+  getPropertyRecommendations: (propertyId, params) => api.get(`/recommendations/property/${propertyId}`, { params }),
   createRecommendation: (data) => api.post('/recommendations', data),
   updateRecommendation: (id, data) => api.put(`/recommendations/${id}`, data),
   deleteRecommendation: (id) => api.delete(`/recommendations/${id}`),
