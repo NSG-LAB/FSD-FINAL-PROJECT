@@ -2,6 +2,32 @@
 
 This repository contains the frontend application built with React and Vite.
 
+## File Structure
+
+```text
+FSD-FINAL-PROJECT/
+├── public/                    # Static assets served as-is
+│   ├── _redirects
+│   ├── favicon.svg
+│   ├── hero-home.jpg
+│   └── index.html
+├── src/
+│   ├── components/            # Reusable UI components
+│   ├── pages/                 # Route-level page components
+│   ├── redux/                 # Redux store and slices
+│   ├── services/              # API/client service helpers
+│   ├── utils/                 # Utility helpers
+│   ├── App.js
+│   ├── index.js
+│   ├── index.css
+│   └── setupTests.js
+├── Dockerfile
+├── jest.config.js
+├── package.json
+├── tailwind.config.js
+└── vite.config.mjs
+```
+
 ## Connect Frontend With Backend
 
 The frontend now supports two reliable ways to connect to the backend during development:
